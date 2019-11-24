@@ -1,16 +1,22 @@
 {
   "compilerOptions": {
-   // "module": "commonjs",
-    "outDir": "/dist/",
-    "target": "es6",
-    "sourceMap": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "removeComments": false,
-    "esModuleInterop": true
+      "module": "commonjs",
+      "esModuleInterop": false,
+      "target": "es6",
+      "noImplicitAny": true,
+      "moduleResolution": "node",
+      "sourceMap": true,
+      "outDir": "dist",
+      "baseUrl": ".",
+      "paths": {
+          "*": [
+              "node_modules/",
+              "src/types/*"
+          ]
+      }
   },
-
-  "exclude": [
-    "node_modules"
-  ]
+  "include": [
+      "src/**/*"
+  ],
+  "files": ["node_modules/phaser/types/phaser.d.ts"]
 }
