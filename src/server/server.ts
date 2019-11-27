@@ -1,6 +1,7 @@
 import * as express from 'express'
 import * as path from 'path'
 import * as config from './config'
+import { Socket } from 'socket.io'
 
 const app = express()
 const conf = config.default
@@ -11,9 +12,9 @@ let io = require("socket.io")(http)
 
 app.use(express.static(path.join( __dirname, "../client")))
 
-io.on("connection", function(socket: any) {
+io.on("connection", function(socket: Socket) {
   console.log("Client connected!")
-
+  
 })
 
 http.listen(conf.server_port, function() {
