@@ -6,8 +6,9 @@ export class PlayerEvents {
     private static onPointerMove(player: Player) : void
     {
 
-        let angle = Phaser.Math.Angle.Between(Number(game.config.width)/2, Number(game.config.height)/2, 
-        player.getScene().input.x, player.getScene().input.y)
+        let angle = Phaser.Math.Angle.Between(player.getShape().x, player.getShape().y, 
+        player.getScene().input.x + player.getScene().cameras.main.scrollX, 
+        player.getScene().input.y + player.getScene().cameras.main.scrollY)
 
         player.setVelocity(Math.cos(angle), Math.sin(angle))
     }

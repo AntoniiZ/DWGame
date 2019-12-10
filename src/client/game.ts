@@ -22,6 +22,7 @@ const config: Phaser.Types.Core.GameConfig = {
     }
   },
 
+  backgroundColor: 0x000000,
   scene: [MainScene]
 }
 
