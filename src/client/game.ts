@@ -13,9 +13,12 @@ const config: Phaser.Types.Core.GameConfig = {
   },
 
   physics: {
-    default: 'ninja',
+    default: 'arcade',
     arcade: {
-        debug: false
+        debug: true,
+        gravity: {
+            y: 0
+        }
     }
   },
 
@@ -28,8 +31,6 @@ class Game extends Phaser.Game {
   }
 }
 
-window.addEventListener("load", () => {
-  const game = new Game(config)
-})
+const game = new Game(config)
 
-export {Game, config}
+export {game}

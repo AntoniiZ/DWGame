@@ -1,44 +1,41 @@
-import { config } from "../client/game"
+import { GameObject } from "./GameObject"
 
-export class Player {
+export class Player extends GameObject {
 
-    private scene: Phaser.Scene
     private shape: Phaser.GameObjects.Arc
-    private velocity: Phaser.Geom.Point
-    private color: number
-    private speed : number
+    private graphics: Phaser.GameObjects.Graphics
 
-    public constructor(scene: Phaser.Scene, shape: Phaser.GameObjects.Arc){
-        this.scene = scene
+    public constructor(scene: Phaser.Scene, displayCoords: Phaser.Geom.Point, speed: number, velocity: Phaser.Geom.Point, bounds: number[], 
+        graphics: Phaser.GameObjects.Graphics, shape: Phaser.GameObjects.Arc){
+
+        super(scene, displayCoords, speed, velocity, bounds)
         this.shape = shape
-        this.velocity = new Phaser.Geom.Point(0, 0)
-        this.color = 0xFFFFFF
-        this.speed = 10
-        
+        this.graphics = graphics
     }
 
-    public setVelocity(x: number, y: number) : void {
-        this.velocity = new Phaser.Geom.Point(x, y)
+    public getShape() : Phaser.GameObjects.Arc {
+        return this.shape
     }
 
-    public getVelocity() : Phaser.Geom.Point {
-        return this.velocity
+    protected move() : void {
+
+        if(this.shape.x + this.getVelocity().x * this.getSpeed() >= this.getBounds()[0] && this.shape.x + this.getVelocity().x * this.getSpeed() <= this.getBounds()[2])
+        {
+            this.shape.x += this.getVelocity().x * this.getSpeed()
+        }  
+
+        if(this.shape.y + this.getVelocity().y * this.getSpeed() >= this.getBounds()[1] && this.shape.y + this.getVelocity().y * this.getSpeed() <= this.getBounds()[3])
+        {
+            this.shape.y += this.getVelocity().y * this.getSpeed()
+        }
     }
 
-    public setSpeed(speed: number) : void {
-        this.speed = speed
-    }
+    protected draw() : void {
 
-    public getSpeed() : number {
-        return this.speed
-    }
-
-    public move(velocity: Phaser.Geom.Point) : void {
-        this.shape.x += this.velocity.x * this.speed
-        this.shape.y += this.velocity.y * this.speed
-    }
-
-    public getLocation() : Phaser.Geom.Point {
-        return new Phaser.Geom.Point(this.shape.x, this.shape.y)
+        this.graphics.clear().fillStyle(this.shape.fillColor).fillCircle(
+            this.getDisplayCoords().x,
+            this.getDisplayCoords().y, 
+            this.shape.radius
+        )
     }
 }

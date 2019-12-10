@@ -1,7 +1,10 @@
 import * as express from 'express'
-import * as path from 'path'
 import * as config from './config'
 import { Socket } from 'socket.io'
+
+import api from './routes/api'
+import client from './routes/client'
+
 const app = express()
 const conf = config.default
 app.set("port", process.env.PORT || conf.server_port)
@@ -9,14 +12,9 @@ app.set("port", process.env.PORT || conf.server_port)
 let http = require("http").Server(app)
 let io = require("socket.io")(http)
 
-app.use(express.static(path.join( __dirname, "../client")))
-app.use(express.static(path.join( __dirname, "../client/views")))
+app.use('/api', api)
+app.use('/client', client)
 
-io.on("connection", (socket: Socket) => {
-  console.log("Client connected!")
+io.on("connection", (socket: Socket) => {})
 
-})
-
-http.listen(conf.server_port, () => {
-  console.log(`listening on port ${conf.server_port}`)
-})
+http.listen(conf.server_port, () => {})

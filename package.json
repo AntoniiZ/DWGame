@@ -6,7 +6,7 @@
   "scripts": {
     "tsc": "tsc",
     "clean": "rimraf dist/*",
-    "html": "copyfiles -u 1 src/client/views/*.html dist/",
+    "html": "copyfiles -u 1 src/client/*.html dist/",
     "parcel": "parcel build src/client/game.ts -d dist/client",
     "build": "npm-run-all clean html tsc parcel",
     "start": "node dist/server/server.js",
