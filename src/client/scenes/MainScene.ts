@@ -2,7 +2,6 @@ import { game } from "../game"
 import { Player } from "../../api/Player";
 import { GameMap } from "../../api/GameMap";
 import { PlayerEvents } from "../../api/PlayerEvents";
-import { runInThisContext } from "vm";
 
 export class MainScene extends Phaser.Scene
 {
