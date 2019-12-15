@@ -1,21 +1,23 @@
-import { Player } from "./Player"
+import { Arc } from "./Arc"
 import { game } from "../client/game"
 
 export class PlayerEvents {
 
-    private static onPointerMove(player: Player) : void
+    private static onPointerMove(arc: Arc) : void
     {
 
-        let angle = Phaser.Math.Angle.Between(player.getShape().x, player.getShape().y, 
-        player.getScene().input.x + player.getScene().cameras.main.scrollX, 
-        player.getScene().input.y + player.getScene().cameras.main.scrollY)
-
-        player.setVelocity(Math.cos(angle), Math.sin(angle))
+        let angle = Phaser.Math.Angle.Between(
+            Number(game.config.width)/2, 
+            Number(game.config.height)/2, 
+            arc.getScene().input.x, 
+            arc.getScene().input.y
+        )
+        arc.setVelocity(Math.cos(angle), Math.sin(angle))
     }
 
-    public static initAll(player: Player) : void 
+    public static initAll(arc: Arc) : void 
     {
-        player.getScene().input.on('pointermove', () => this.onPointerMove(player))
+        arc.getScene().input.on('pointermove', () => this.onPointerMove(arc))
     }
 
 }

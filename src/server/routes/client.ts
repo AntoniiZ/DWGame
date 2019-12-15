@@ -1,13 +1,14 @@
 import * as express from "express"
 
-var client = express.Router()
+var clientRouter = express.Router()
 
-client.get(/.*(\.js|\.html|\/)/, (req: express.Request, res: express.Response) => {
+clientRouter.get(/.*(\.js|\.html|\/)/, (req: express.Request, res: express.Response) => {
     if(req.path == '/'){
         res.redirect(`${req.baseUrl}/index.html`)
+    } else {
+        res.sendFile(`/${req.path}`, {'root': `${__dirname}'../../../client`});
     }
-    res.sendFile(`/${req.path}`, {'root': `${__dirname}'../../../client`});
 })
 
 
-export default client
+export default clientRouter

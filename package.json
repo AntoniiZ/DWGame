@@ -7,8 +7,10 @@
     "tsc": "tsc",
     "clean": "rimraf dist/*",
     "html": "copyfiles -u 1 src/client/*.html dist/",
+    "assetsJPG": "copyfiles -u 1 src/assets/*.jpg dist/",
+    "assetsPNG": "copyfiles -u 1 src/assets/*.png dist/",
     "parcel": "parcel build src/client/game.ts -d dist/client",
-    "build": "npm-run-all clean html tsc parcel",
+    "build": "npm-run-all clean assetsJPG assetsPNG html tsc parcel",
     "start": "node dist/server/server.js",
     "dev": "nodemon --watch src -e ts --exec npm-run-all build start"
   },
