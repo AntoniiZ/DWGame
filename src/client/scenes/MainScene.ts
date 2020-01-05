@@ -3,17 +3,16 @@ import { Arc } from "../../api/Arc";
 import { Food } from "../../api/Food";
 import { Explosion } from "../../api/Explosion";
 import { BouncyWall } from "../../api/BouncyWall";
-import { GameMap } from "../../api/GameMap";
 import { PlayerEvents } from "../../api/PlayerEvents";
+import * as GameMap from "../../api/GameMapConfig";
 
 export class MainScene extends Phaser.Scene
 {
     private player: Arc
-    private gameMap: GameMap
     private testplayers: Arc[] = []
     private explosions: Arc[] = []
     private coordinatesInfo: Phaser.GameObjects.Text
-    private labelsCamera: Phaser.Cameras.Scene2D.Camera
+    private gameMapBounds: number[] = GameMap.settings.size
 
     public constructor()
     {
@@ -27,36 +26,59 @@ export class MainScene extends Phaser.Scene
 
     public create() : void 
     {
-        this.gameMap = new GameMap([-3000, -3000, 3000, 3000])
-        let gameMapBounds = this.gameMap.getBounds();
-
-        this.labelsCamera = this.cameras.add(0, 0, game.scale.width, game.scale.height, false, 'labels')
-
         this.player = new BouncyWall(
-            /* scene */             this,
-            /* speed */             5, 
-            /* velocity */          new Phaser.Geom.Point(0, 0), 
-            /* bounds */            gameMapBounds, 
-            /* graphicsObject */    this.add.graphics(), 
-            /* body/shape */        new Phaser.GameObjects.Arc(this, 0, 0, 64).setFillStyle(0xaffffa), 
+            this, 
+            this.add.graphics(), 
+            new Phaser.GameObjects.Arc(
+                this, 
+                Phaser.Math.Between(
+                    GameMap.settings.playerSpawnCoordsRange[0], 
+                    GameMap.settings.playerSpawnCoordsRange[1]
+                ), 
+                Phaser.Math.Between(
+                    GameMap.settings.playerSpawnCoordsRange[0], 
+                    GameMap.settings.playerSpawnCoordsRange[1]
+                ), 
+                GameMap.settings.playerRadius
+            ).setFillStyle(GameMap.settings.playerColor), 
+            GameMap.settings.playerSpeed
         )
         this.testplayers.push(this.player)
 
-        while(this.testplayers.length < 600){
+        while(this.testplayers.length < GameMap.settings.amountOfRandomObjects){
 
             let randomNum: number = Phaser.Math.Between(0, 1)
 
-            let randomRadius = randomNum ? Phaser.Math.Between(15, 35) : Phaser.Math.Between(30, 50)
-            let randomColor = randomNum ? Phaser.Display.Color.GetColor(49, Phaser.Math.Between(95, 175), 50) :
-                              Phaser.Display.Color.GetColor(Phaser.Math.Between(155, 255), 105, 36)
-                              
-            let randomX = Phaser.Math.Between(gameMapBounds[0] - randomRadius, gameMapBounds[2] + randomRadius)
-            let randomY = Phaser.Math.Between(gameMapBounds[1] - randomRadius, gameMapBounds[3] + randomRadius)
+            let randomRadius = randomNum ? 
+                Phaser.Math.Between(GameMap.settings.foodRadiusRange[0], GameMap.settings.foodRadiusRange[1]) : 
+                Phaser.Math.Between(GameMap.settings.wallsRadiusRange[0], GameMap.settings.wallsRadiusRange[1])
 
-            let newArc: Arc = randomNum ? new Food (this, 1, new Phaser.Geom.Point(0, 0), gameMapBounds, this.add.graphics(), 
-                    new Phaser.GameObjects.Arc(this, randomX, randomY, randomRadius).setFillStyle(randomColor)) : 
-                    new BouncyWall(this, 1, new Phaser.Geom.Point(0, 0), gameMapBounds, this.add.graphics(), 
-                    new Phaser.GameObjects.Arc(this, randomX, randomY, randomRadius).setFillStyle(randomColor))    
+            let randomColor = randomNum ? 
+                Phaser.Display.Color.GetColor(
+                    Phaser.Math.Between(GameMap.settings.foodColorRange[0][0], GameMap.settings.foodColorRange[0][1]),
+                    Phaser.Math.Between(GameMap.settings.foodColorRange[1][0], GameMap.settings.foodColorRange[1][1]),
+                    Phaser.Math.Between(GameMap.settings.foodColorRange[2][0], GameMap.settings.foodColorRange[2][1])
+                ) : 
+                Phaser.Display.Color.GetColor(
+                    Phaser.Math.Between(GameMap.settings.wallsColorRange[0][0], GameMap.settings.wallsColorRange[0][1]),
+                    Phaser.Math.Between(GameMap.settings.wallsColorRange[1][0], GameMap.settings.wallsColorRange[1][1]),
+                    Phaser.Math.Between(GameMap.settings.wallsColorRange[2][0], GameMap.settings.wallsColorRange[2][1])
+                )
+                
+            let randomX = Phaser.Math.Between(-this.gameMapBounds[0]/2 + randomRadius, this.gameMapBounds[0]/2 - randomRadius)
+            let randomY = Phaser.Math.Between(-this.gameMapBounds[1]/2 + randomRadius, this.gameMapBounds[1]/2 - randomRadius)
+
+            let newArc: Arc = randomNum ? 
+                new Food(
+                    this, 
+                    this.add.graphics(), 
+                    new Phaser.GameObjects.Arc(this, randomX, randomY, randomRadius).setFillStyle(randomColor)
+                ) :
+                new BouncyWall(
+                    this, 
+                    this.add.graphics(), 
+                    new Phaser.GameObjects.Arc(this, randomX, randomY, randomRadius).setFillStyle(randomColor)
+                ) 
 
             let collides: boolean = false
 
@@ -76,19 +98,14 @@ export class MainScene extends Phaser.Scene
         let shape = this.player.getShape() // The secondary camera ignores the main player we control
 
         this.cameras.main.setBounds(
-            gameMapBounds[0], 
-            gameMapBounds[1], 
-            gameMapBounds[2] - gameMapBounds[0], 
-            gameMapBounds[3] - gameMapBounds[1]
+            -this.gameMapBounds[0]/2, 
+            -this.gameMapBounds[1]/2, 
+            this.gameMapBounds[0], 
+            this.gameMapBounds[1]
         )
 
         PlayerEvents.initAll(this.player)
-
-        this.coordinatesInfo = this.add.text(50, 50, '').setFontSize(30)
-        this.coordinatesInfo.setScrollFactor(0, 0)
-        
         this.cameras.main.startFollow(shape, true, 0.1, 0.1) // The main camera follows the player we control
-        this.cameras.main.ignore(this.coordinatesInfo) // The main camera ignores texts
     }
 
     public update() : void 
@@ -131,13 +148,15 @@ export class MainScene extends Phaser.Scene
                     indCmp ? this.testplayers.splice(k-1, 1) : this.testplayers.splice(k, 1)
 
                     let explosion: Arc = new Explosion(
-                        /* scene */             this,
-                        /* speed */             0, 
-                        /* velocity */          new Phaser.Geom.Point(0, 0), 
-                        /* bounds */            this.gameMap.getBounds(), 
-                        /* graphicsObject */    this.add.graphics(), 
-                        /* body/shape */        new Phaser.GameObjects.Arc(this, (coords[0].x + coords[1].x)/2, (coords[0].y + coords[1].y)/2, 10).setFillStyle(0xff0000), 
-                        /* maximum radius */    Math.sqrt(radiuses[0]**2 + radiuses[1]**2)*3
+                        this, 
+                        this.add.graphics(), 
+                        new Phaser.GameObjects.Arc(
+                            this, 
+                            (coords[0].x + coords[1].x)/2, 
+                            (coords[0].y + coords[1].y)/2, 
+                            GameMap.settings.explosionInitialRadius
+                        ).setFillStyle(GameMap.settings.explosionColorRange), 
+                        Math.sqrt(radiuses[0]**2 + radiuses[1]**2)*3
                     )
                     this.explosions.push(explosion)
                     break
@@ -164,15 +183,6 @@ export class MainScene extends Phaser.Scene
 
         }
         this.player.draw()
-    
-        /*return shape.x + shape.radius >= cameraWorldView.x && shape.x - shape.radius <= cameraWorldView.x + cameraWorldView.width &&
-            shape.y + shape.radius >= cameraWorldView.y && shape.y - shape.radius <= cameraWorldView.y + cameraWorldView.height */
-        this.debug()
-    }
-
-    private debug() : void 
-    {
-        this.coordinatesInfo.setText( `{x, y, radius, camera} => {${Math.floor(this.player.getShape().x)}, ${Math.floor(this.player.getShape().y)},  ${Math.floor(this.player.getShape().radius)}}| ${this.cameras.main.zoom}, ${Math.floor(this.cameras.main.scrollX)}, ${Math.floor(this.cameras.main.scrollY)}`)
     }
     
 }

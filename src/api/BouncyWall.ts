@@ -1,23 +1,23 @@
 import { Arc } from "./Arc";
-
+import * as GameMap from "./GameMapConfig"
 export class BouncyWall extends Arc {
 
-    public constructor(scene: Phaser.Scene,  speed: number, velocity: Phaser.Geom.Point, bounds: number[], 
-        graphics: Phaser.GameObjects.Graphics, shape: Phaser.GameObjects.Arc){
-            super(scene, speed, velocity, bounds, graphics, shape)
+    public constructor(scene: Phaser.Scene, graphics: Phaser.GameObjects.Graphics, shape: Phaser.GameObjects.Arc, 
+        speed: number = 0, velocity: Phaser.Geom.Point = new Phaser.Geom.Point(0, 0)){
+        super(scene, graphics, shape, speed, velocity)
     }
 
     public move() : void {
         this.getShape().x += this.getVelocity().x * this.getSpeed()
         this.getShape().y += this.getVelocity().y * this.getSpeed()
 
-        let bounds: number[] = this.getBounds()
+        let bounds: number[] = GameMap.settings.size
 
         let copyX: Number = new Number(this.getShape().x)
         let copyY: Number = new Number(this.getShape().y)
 
-        this.getShape().x = Phaser.Math.Clamp(this.getShape().x, bounds[0] + this.getShape().radius, bounds[2] - this.getShape().radius)
-        this.getShape().y = Phaser.Math.Clamp(this.getShape().y, bounds[1] + this.getShape().radius, bounds[3] - this.getShape().radius)
+        this.getShape().x = Phaser.Math.Clamp(this.getShape().x, -bounds[0]/2 + this.getShape().radius, bounds[0]/2 - this.getShape().radius)
+        this.getShape().y = Phaser.Math.Clamp(this.getShape().y, -bounds[1]/2 + this.getShape().radius, bounds[1]/2 - this.getShape().radius)
     }
 
     public actTowards(arc: Arc) : void {
@@ -28,9 +28,9 @@ export class BouncyWall extends Arc {
         arc.getShape().x -= arc.getVelocity().x * arc.getSpeed()
         arc.getShape().y -= arc.getVelocity().y * arc.getSpeed()
 
-        if(arc.getShape().radius > 25){
-            arc.getShape().radius /= 1.21125
-            this.getScene().cameras.main.zoom *= (Math.sqrt(1.21125))
+        if(arc.getShape().radius > GameMap.settings.playerMinRadius){
+            arc.getShape().radius /= GameMap.settings.playerWallRadiusReductionCoef
+            this.getScene().cameras.main.zoom *= (Math.sqrt(GameMap.settings.playerWallRadiusReductionCoef))
         }
     }
 

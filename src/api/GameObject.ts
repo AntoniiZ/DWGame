@@ -1,15 +1,12 @@
-import { GameMap } from "./GameMap"
-
-export abstract class GameObject extends GameMap {
+export abstract class GameObject {
 
     private speed: number
     private scene: Phaser.Scene
     private velocity: Phaser.Geom.Point
     private displayCoords: Phaser.Geom.Point
 
-    public constructor(scene: Phaser.Scene, speed: number, velocity: Phaser.Geom.Point, bounds: number[])
+    public constructor(scene: Phaser.Scene, speed: number, velocity: Phaser.Geom.Point)
     {
-        super(bounds)
         this.scene = scene
         this.speed = speed
         this.velocity = velocity
