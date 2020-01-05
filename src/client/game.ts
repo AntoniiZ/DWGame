@@ -16,13 +16,13 @@ const config: Phaser.Types.Core.GameConfig = {
   physics: {
     default: 'arcade',
     arcade: {
-        debug: true,
+        debug: false,
         gravity: {
             y: 0
         }
     }
   },
-
+  backgroundColor: Phaser.Display.Color.GetColor(4, 115, 193),
   scene: [MainScene]
 }
 

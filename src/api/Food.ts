@@ -7,18 +7,21 @@ export class Food extends Arc {
             super(scene, speed, velocity, bounds, graphics, shape)
     }
 
+    public move() : void {}
+    
     public actTowards(arc: Arc) : void {
 
-        let bounds: number[] = this.getBounds()
+        //let bounds: number[] = this.getBounds()
 
         let radiusIncrease = (Math.sqrt(arc.getShape().radius**2 + this.getShape().radius**2)) / arc.getShape().radius
         arc.getShape().radius *= radiusIncrease
         this.getScene().cameras.main.zoom /= (Math.sqrt(radiusIncrease))
         //this.getScene().cameras.main.zoom -= Math.sqrt(this.getShape().radius)/2
 
-        this.getShape().setPosition(Phaser.Math.Between(bounds[0], bounds[2]), Phaser.Math.Between(bounds[1], bounds[3]))
-        
-        this.draw() 
+       // this.getShape().setPosition(Phaser.Math.Between(bounds[0], bounds[2]), Phaser.Math.Between(bounds[1], bounds[3]))
+        this.destroy()
+
+        //this.draw() 
     }
 
 }
