@@ -17,6 +17,12 @@ app.use('/api', apiRouter)
 app.use('/assets', assetsRouter)
 app.use('/client', clientRouter)
 
-io.on("connection", (socket: Socket) => {})
+io.of('/client').on("connection", (socket: Socket) => {
+    console.log(`user ${socket.id} connected`)
+
+    socket.on('disconnect', () => {
+        console.log(`user ${socket.id} disconnected`)
+    })
+})
 
 http.listen(conf.server_port, () => {})

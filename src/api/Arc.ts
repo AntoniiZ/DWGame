@@ -1,6 +1,5 @@
 import { GameObject } from "./GameObject"
 import * as GameMap from "./GameMapConfig"
-import { game } from "../client/game"
 
 export abstract class Arc extends GameObject {
 
@@ -24,7 +23,7 @@ export abstract class Arc extends GameObject {
     }
     
     public canSeeObject(arc: Arc) : boolean {
-
+            
         let shape = arc.getShape()
         let cameraWorldView : Phaser.Geom.Rectangle = this.getScene().cameras.main.worldView
 
@@ -47,8 +46,8 @@ export abstract class Arc extends GameObject {
 
         this.graphics.fillStyle(this.shape.fillColor).setAlpha(GameMap.settings.drawShapesAlpha)
         .fillCircle(this.shape.x, this.shape.y, this.shape.radius)
-        this.graphics.lineStyle(GameMap.settings.strokeLineWidth, newColor).setAlpha(GameMap.settings.drawShapesAlpha)
-        .strokeCircle(this.shape.x, this.shape.y, this.shape.radius)
+        this.graphics.lineStyle(GameMap.settings.strokeLineWidth, newColor)
+        .setAlpha(GameMap.settings.drawShapesAlpha).strokeCircle(this.shape.x, this.shape.y, this.shape.radius)
     }
 
     public collidesWith(arc: Arc) : boolean {

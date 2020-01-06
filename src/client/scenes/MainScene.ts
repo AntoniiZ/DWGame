@@ -5,23 +5,20 @@ import { Explosion } from "../../api/Explosion";
 import { BouncyWall } from "../../api/BouncyWall";
 import { PlayerEvents } from "../../api/PlayerEvents";
 import * as GameMap from "../../api/GameMapConfig";
+import { NetworkScene } from "./NetworkScene";
 
-export class MainScene extends Phaser.Scene
+export class MainScene extends NetworkScene
 {
     private player: Arc
     private testplayers: Arc[] = []
     private explosions: Arc[] = []
     private coordinatesInfo: Phaser.GameObjects.Text
+    private radarCamera: Phaser.Cameras.Scene2D.Camera
     private gameMapBounds: number[] = GameMap.settings.size
 
     public constructor()
     {
         super("MainScene")
-    }
-
-    public preload() : void 
-    {
-        //this.load.image('background', '../../assets/a2.jpg')
     }
 
     public create() : void 
@@ -64,7 +61,7 @@ export class MainScene extends Phaser.Scene
                     Phaser.Math.Between(GameMap.settings.wallsColorRange[1][0], GameMap.settings.wallsColorRange[1][1]),
                     Phaser.Math.Between(GameMap.settings.wallsColorRange[2][0], GameMap.settings.wallsColorRange[2][1])
                 )
-                
+
             let randomX = Phaser.Math.Between(-this.gameMapBounds[0]/2 + randomRadius, this.gameMapBounds[0]/2 - randomRadius)
             let randomY = Phaser.Math.Between(-this.gameMapBounds[1]/2 + randomRadius, this.gameMapBounds[1]/2 - randomRadius)
 
@@ -110,6 +107,7 @@ export class MainScene extends Phaser.Scene
 
     public update() : void 
     {
+        //console.log(this.game.loop.actualFps)
         this.player.move()
 
         for(let i : number = 0; i < this.testplayers.length; i++){
