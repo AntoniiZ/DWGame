@@ -6,14 +6,14 @@ import { BouncyWall } from "../../api/BouncyWall";
 import { PlayerEvents } from "../../api/PlayerEvents";
 import * as GameMap from "../../api/GameMapConfig";
 import { NetworkScene } from "./NetworkScene";
-
+import { Player } from "../../api/Player";
+import 'babel-polyfill'
 export class MainScene extends NetworkScene
 {
-    private player: Arc
-    private testplayers: Arc[] = []
+    private player: Player
     private explosions: Arc[] = []
-    private coordinatesInfo: Phaser.GameObjects.Text
-    private radarCamera: Phaser.Cameras.Scene2D.Camera
+    private testplayers: Arc[] = []
+    private players: Promise<Map<string, Player>>
     private gameMapBounds: number[] = GameMap.settings.size
 
     public constructor()
@@ -21,9 +21,10 @@ export class MainScene extends NetworkScene
         super("MainScene")
     }
 
-    public create() : void 
+    public create() : void
     {
-        this.player = new BouncyWall(
+        
+        this.player = new Player(
             this, 
             this.add.graphics(), 
             new Phaser.GameObjects.Arc(
@@ -38,10 +39,19 @@ export class MainScene extends NetworkScene
                 ), 
                 GameMap.settings.playerRadius
             ).setFillStyle(GameMap.settings.playerColor), 
-            GameMap.settings.playerSpeed
+            GameMap.settings.playerSpeed,
+            this.getSocket().id
         )
-        this.testplayers.push(this.player)
+        PlayerEvents.initAll(this.player)
 
+        this.players = PlayerEvents.getConnectedPlayers(this.getSocket())
+        this.players.then((value: Map<string, Player>) => {
+            console.error(value)
+        })
+
+        this.player.spawnPlayer(this.getSocket())
+
+        /// THIS PART SHOULD BE IN SERVER, TO DO
         while(this.testplayers.length < GameMap.settings.amountOfRandomObjects){
 
             let randomNum: number = Phaser.Math.Between(0, 1)
@@ -91,8 +101,7 @@ export class MainScene extends NetworkScene
                 this.testplayers.push(newArc)
             }
         }
-        this.testplayers.splice(0, 1)
-        let shape = this.player.getShape() // The secondary camera ignores the main player we control
+        //////
 
         this.cameras.main.setBounds(
             -this.gameMapBounds[0]/2, 
@@ -101,14 +110,17 @@ export class MainScene extends NetworkScene
             this.gameMapBounds[1]
         )
 
-        PlayerEvents.initAll(this.player)
-        this.cameras.main.startFollow(shape, true, 0.1, 0.1) // The main camera follows the player we control
+        this.cameras.main.startFollow(this.player.getShape(), true, 0.1, 0.1) // The main camera follows the player we control
     }
 
     public update() : void 
     {
-        //console.log(this.game.loop.actualFps)
+        let copyCoords = new Phaser.Geom.Point(this.player.getShape().x, this.player.getShape().y)
+
         this.player.move()
+        if(!(copyCoords.x == this.player.getShape().x && copyCoords.y == this.player.getShape().y)){
+            this.player.updatePlayer(this.getSocket())
+        }
 
         for(let i : number = 0; i < this.testplayers.length; i++){
             this.testplayers[i].move()

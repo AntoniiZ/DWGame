@@ -8,6 +8,7 @@ export class NetworkScene extends Phaser.Scene
     {
         super(key)
         this.socket = socketio(`http://localhost:${config.default.server_port}/client`)
+        
     } 
 
     public getSocket() : SocketIOClient.Socket

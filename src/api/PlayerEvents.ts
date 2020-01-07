@@ -1,20 +1,30 @@
-import { Arc } from "./Arc"
-import { game } from "../client/game"
+import { Player } from "./Player"
+import { game } from "../client/game";
+import 'babel-polyfill'
 
 export class PlayerEvents {
 
-    private static onPointerMove(arc: Arc) : void
+    private static onPointerMove(player: Player) : void
     {
-        const transformedPoint: Phaser.Math.Vector2 = arc.getScene().cameras.main.getWorldPoint(arc.getScene().input.x, arc.getScene().input.y);
+        const transformedPoint: Phaser.Math.Vector2 = player.getScene().cameras.main.getWorldPoint(
+            player.getScene().input.x, 
+            player.getScene().input.y
+        );
 
-        let angle: number = Phaser.Math.Angle.Between(arc.getShape().x, arc.getShape().y, transformedPoint.x, transformedPoint.y)
+        let angle: number = Phaser.Math.Angle.Between(player.getShape().x, player.getShape().y, transformedPoint.x, transformedPoint.y)
 
-        arc.setVelocity(Math.cos(angle), Math.sin(angle))
+        player.setVelocity(Math.cos(angle), Math.sin(angle))
     }
 
-    public static initAll(arc: Arc) : void 
+    public static async getConnectedPlayers(socket: SocketIOClient.Socket) : Promise<Map<string, Player>> {
+        return new Promise((resolve, reject) => {
+            socket.on('getPlayers', (data: Map<string, Player>) => resolve(data))
+        })
+    }
+
+    public static initAll(player: Player) : void 
     {
-        arc.getScene().input.on('pointermove', () => this.onPointerMove(arc))
+        player.getScene().input.on('pointermove', () => this.onPointerMove(player))
     }
 
 }

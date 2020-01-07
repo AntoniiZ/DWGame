@@ -57,8 +57,8 @@ export abstract class Arc extends GameObject {
     }
     
     public destroy() : void {
-        this.graphics.destroy()
         this.shape = null
+        this.graphics.destroy()
     }
 
     public abstract actTowards(gameObject?: GameObject) : void
