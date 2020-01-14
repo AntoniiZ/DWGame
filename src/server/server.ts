@@ -7,8 +7,12 @@ import assetsRouter from './routes/assets'
 import clientRouter from './routes/client'
 
 import { Arc } from '../api/Arc'
-import * as GameMap from '../api/GameMapConfig'
+import { Food } from '../api/Food'
 import { Player } from '../api/Player'
+import { BouncyWall } from '../api/BouncyWall'
+import * as GameMap from '../api/GameMapConfig'
+
+import { game } from '../client/game'
 
 const app = express()
 const conf = config.default
@@ -22,14 +26,20 @@ app.use('/assets', assetsRouter)
 app.use('/client', clientRouter)
 
 let players: Map<string, Player> = new Map()
+let gameMapBounds: number[] = GameMap.settings.size 
 
 io.of('/client').on("connection", (socket: Socket) => {
     console.log(`user ${socket.id} connected`)
-
-    socket.emit('getPlayers', Array.from(players))
+    
+    for(const entry of players) {
+        socket.emit('getPlayer', {
+            'id': entry[0],
+            'player': entry[1]
+        })
+    }
 
     socket.on('spawnPlayer', (data: any) => {
-
+        
         players.set(socket.id, new Player(
             data.scene, 
             data.graphics, 
@@ -38,23 +48,29 @@ io.of('/client').on("connection", (socket: Socket) => {
             socket.id,
             data.velocity,
         ))
+        data.id = socket.id
+        
+        socket.broadcast.emit('spawnPlayer', data)
+        
     })
-
     socket.on('updatePlayer', (data: any) => {
-        if(data.id == undefined){
+
+        if(!players.has(socket.id) || socket.id == undefined){
             return
         }
 
-        let shape: Phaser.GameObjects.Arc = players.get(data.id).getShape()
-        shape.x = data.x
-        shape.y = data.y
-        shape.radius = data.radius
-        console.log(`new coords |${players.get(data.id).getSocketId()}|${shape.x}|${shape.y}|${shape.radius}`)
+        let shape: Phaser.GameObjects.Arc = players.get(socket.id).getShape()
+        shape.x = data.x; shape.y = data.y; shape.radius = data.radius; shape.fillColor = data.color
+        data.id = socket.id
+
+        socket.broadcast.emit('updatePlayer', data)
     })
 
     socket.on('disconnect', () => {
         console.log(`user ${socket.id} disconnected`)
         players.delete(socket.id)
+
+        socket.broadcast.emit('disconnectPlayer', socket.id)
     })
 })
 

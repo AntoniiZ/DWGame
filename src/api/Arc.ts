@@ -34,7 +34,7 @@ export abstract class Arc extends GameObject {
     public abstract move() : void
 
     public draw() : void {
-
+        
         this.graphics.clear()
 
         let newColor: number | Phaser.Types.Display.ColorObject = Phaser.Display.Color.ColorToRGBA(this.shape.fillColor)
