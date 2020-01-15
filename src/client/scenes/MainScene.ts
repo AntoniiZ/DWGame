@@ -20,6 +20,8 @@ export class MainScene extends NetworkScene
 
     public create() : void
     {
+        //this.gameMapBounds = GameMap.settings.size = [3000, 3000]
+
         this.player = new Player(
             this, 
             this.add.graphics(), 
@@ -63,7 +65,8 @@ export class MainScene extends NetworkScene
         }
 
         this.player.draw()
-        for(let [key, otherPlayer] of this.player.getOtherPlayers()){
+        for(let [otherPlayerSocketId, otherPlayer] of this.player.getOtherPlayers())
+        {
             if(this.player.canSeeObject(otherPlayer))
             {
                 if(this.player.collidesWith(otherPlayer)){
@@ -73,6 +76,14 @@ export class MainScene extends NetworkScene
                 otherPlayer.draw()
             }
         }
+        for(let arc of this.player.getObjects())
+        {
+            if(this.player.canSeeObject(arc))
+            {
+                arc.draw()
+            }
+        }
     }
+
     
 }

@@ -25,17 +25,63 @@ app.use('/api', apiRouter)
 app.use('/assets', assetsRouter)
 app.use('/client', clientRouter)
 
+let objects: Object[] = []
 let players: Map<string, Player> = new Map()
-let gameMapBounds: number[] = GameMap.settings.size 
+let gameMapBounds: number[] = GameMap.settings.size;
+
+function spawnObjects(): void {
+    if(objects.length >= (gameMapBounds[0] + gameMapBounds[1])/20 * players.size){
+        return
+    }
+    
+    let randomNum: number = Math.round(Math.random())
+
+    let randomRadius = randomNum ? 
+        GameMap.settings.foodRadiusRange[0] + Math.random()*(GameMap.settings.foodRadiusRange[1] - GameMap.settings.foodRadiusRange[0]) : 
+        GameMap.settings.wallsRadiusRange[0] + Math.random()*(GameMap.settings.wallsRadiusRange[1] - GameMap.settings.wallsRadiusRange[0])
+
+    let randomColor: number[] = randomNum ? 
+        [
+            GameMap.settings.foodColorRange[0][0] + Math.random()*(GameMap.settings.foodColorRange[0][1] - GameMap.settings.foodColorRange[0][0]),
+            GameMap.settings.foodColorRange[1][0] + Math.random()*(GameMap.settings.foodColorRange[1][1] - GameMap.settings.foodColorRange[1][0]),
+            GameMap.settings.foodColorRange[2][0] + Math.random()*(GameMap.settings.foodColorRange[2][1] - GameMap.settings.foodColorRange[2][0])
+        ] : 
+        [
+            GameMap.settings.wallsColorRange[0][0] + Math.random()*(GameMap.settings.wallsColorRange[0][1] - GameMap.settings.wallsColorRange[0][0]),
+            GameMap.settings.wallsColorRange[1][0] + Math.random()*(GameMap.settings.wallsColorRange[1][1] - GameMap.settings.wallsColorRange[1][0]),
+            GameMap.settings.wallsColorRange[2][0] + Math.random()*(GameMap.settings.wallsColorRange[2][1] - GameMap.settings.wallsColorRange[2][0])
+        ]
+
+    let randomX = -GameMap.settings.size[0]/2 + randomRadius + Math.random()*(GameMap.settings.size[0] - 2*randomRadius)
+    let randomY = -GameMap.settings.size[1]/2 + randomRadius + Math.random()*(GameMap.settings.size[1] - 2*randomRadius)
+    
+    let gameObject: Object = {
+        'randomNum' : randomNum,
+        'x': randomX,
+        'y': randomY,
+        'radius': randomRadius,
+        'color': randomColor
+    }
+    objects.push(gameObject)
+    console.log(`Server: spawned object at ${randomX}:${randomY}`)
+    io.of('/client').emit('spawnObject', gameObject)
+
+    setTimeout(spawnObjects, 1000)
+}
 
 io.of('/client').on("connection", (socket: Socket) => {
     console.log(`user ${socket.id} connected`)
+    spawnObjects()
     
     for(const entry of players) {
         socket.emit('getPlayer', {
             'id': entry[0],
             'player': entry[1]
         })
+    }
+
+    for(const object of objects){
+        socket.emit('spawnObject', object)
     }
 
     socket.on('spawnPlayer', (data: any) => {

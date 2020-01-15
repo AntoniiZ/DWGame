@@ -6,6 +6,7 @@ import * as GameMap from "./GameMapConfig"
 export class Player extends BouncyWall {
 
     private socketId: string
+    private objects: Arc[] = []
     private players: Map<string, Player> = new Map()
 
     public constructor(scene: Phaser.Scene, graphics: Phaser.GameObjects.Graphics, shape: Phaser.GameObjects.Arc, 
@@ -49,7 +50,11 @@ export class Player extends BouncyWall {
         return this.players
     }
 
-    public spawnObject(socket: SocketIOClient.Socket): SocketIOClient.Socket {
+    public getObjects() : Arc[] {
+        return this.objects
+    }
+
+    public spawnRandomObject(socket: SocketIOClient.Socket): SocketIOClient.Socket {
         let randomNum: number = Phaser.Math.Between(0, 1)
 
         let randomRadius = randomNum ? 
@@ -83,7 +88,7 @@ export class Player extends BouncyWall {
                 new Phaser.GameObjects.Arc(this.getScene(), randomX, randomY, randomRadius).setFillStyle(randomColor)
             ) 
         
-        return socket.emit('createObject', {
+        return socket.emit('spawnRandomObject', {
             'randomNum' : randomNum,
             'scene': this.getScene().scene.key,
             'graphics': newArc.getGraphics(),

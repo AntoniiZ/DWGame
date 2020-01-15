@@ -53,7 +53,8 @@ export class PlayerEvents {
             let shape: Phaser.GameObjects.Arc = new Phaser.GameObjects.Arc(scene)
             let graphics: Phaser.GameObjects.Graphics = new Phaser.GameObjects.Graphics(scene)
 
-            player.getOtherPlayers().set(data.id, 
+            player.getOtherPlayers().set(
+                data.id, 
                 new Player(
                     scene,
                     scene.add.graphics(),
@@ -94,13 +95,46 @@ export class PlayerEvents {
             player.getOtherPlayers().delete(data)
         })
     }
+    private static spawnObject(player: Player, socket: SocketIOClient.Socket) : void
+    {
+        socket.on('spawnObject', (data: any) => {
 
+            console.log(`Client: received object at ${data.x}:${data.y}`)
+            let scene = player.getScene()
+            let objects: Arc[] = player.getObjects()
+
+            let color: number = Phaser.Display.Color.GetColor(data.color[0], data.color[1], data.color[2])
+            
+            let shape: Phaser.GameObjects.Arc = new Phaser.GameObjects.Arc (
+                scene, 
+                data.x, 
+                data.y, 
+                data.radius
+            ).setFillStyle(color)
+
+            data.randomNum ? objects.push(
+                new Food(
+                    scene,
+                    scene.add.graphics(),
+                    shape
+                )
+            ) : 
+            objects.push(
+                new BouncyWall(
+                    scene,
+                    scene.add.graphics(),
+                    shape
+                )
+            )
+        })
+    }
     public static initAll(player: Player, socket: SocketIOClient.Socket) : void 
     {
         this.getConnectedPlayers(player, socket)
         this.spawnPlayer(player, socket)
         this.updatePlayer(player, socket)
         this.disconnectPlayer(player, socket)
+        this.spawnObject(player, socket)
 
         player.getScene().input.on('pointermove', () => this.onPointerMove(player))
     }
