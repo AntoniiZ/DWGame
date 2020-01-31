@@ -1,6 +1,5 @@
 import { Arc } from "./Arc";
 import * as GameMap from "./GameMapConfig"
-import { game } from "../client/game";
 
 export class BouncyWall extends Arc {
 

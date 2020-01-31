@@ -27,20 +27,16 @@ export class PlayerEvents {
     {
         socket.on('spawnPlayer', (data: any) => {
 
-            let scene: Phaser.Scene = game.scene.getScene(data.scene)
+            let scene: Phaser.Scene = player.getScene()
+            let graphics: Phaser.GameObjects.Graphics = scene.add.graphics()
             let shape: Phaser.GameObjects.Arc = new Phaser.GameObjects.Arc(scene)
-            let graphics: Phaser.GameObjects.Graphics = new Phaser.GameObjects.Graphics(scene)
+            let velocity: Phaser.Geom.Point = new Phaser.Geom.Point(data.vel.x, data.vel.y)
+
+            shape.setPosition(data.x, data.y).setRadius(data.radius).setFillStyle(data.color)
 
             player.getOtherPlayers().set(
-                data.id,
-                new Player(
-                    scene,
-                    scene.add.graphics(),
-                    Object.assign(shape, data.shape),
-                    data.speed,
-                    data.id,
-                    data.velocity
-                )
+                data.id, 
+                new Player(scene, graphics, shape, data.speed, data.id, velocity)
             )
         })
     }
@@ -49,20 +45,15 @@ export class PlayerEvents {
         socket.on('getPlayer', (data: any) => {
             
             let otherPlayer = data.player
-            let scene: Phaser.Scene = game.scene.getScene(data.player.scene)
+            let scene: Phaser.Scene = player.getScene()
+            let graphics: Phaser.GameObjects.Graphics = scene.add.graphics()
             let shape: Phaser.GameObjects.Arc = new Phaser.GameObjects.Arc(scene)
-            let graphics: Phaser.GameObjects.Graphics = new Phaser.GameObjects.Graphics(scene)
+            let velocity: Phaser.Geom.Point = new Phaser.Geom.Point(otherPlayer.vel.x, otherPlayer.vel.y)
 
+            shape.setPosition(otherPlayer.x, otherPlayer.y).setRadius(otherPlayer.radius).setFillStyle(otherPlayer.color)
             player.getOtherPlayers().set(
                 data.id, 
-                new Player(
-                    scene,
-                    scene.add.graphics(),
-                    Object.assign(shape, otherPlayer.shape),
-                    otherPlayer.speed,
-                    otherPlayer.socketId,
-                    otherPlayer.velocity
-                )
+                new Player(scene, graphics, shape, otherPlayer.speed, otherPlayer.socketId, velocity)
             )
         })
     }
@@ -101,6 +92,10 @@ export class PlayerEvents {
             let scene = player.getScene()
             let objects: Arc[] = player.getObjects()
 
+            if(data == null){
+                objects.push(null)
+                return
+            }
             let color: number = Phaser.Display.Color.GetColor(data.color[0], data.color[1], data.color[2])
             
             let shape: Phaser.GameObjects.Arc = new Phaser.GameObjects.Arc (
@@ -134,10 +129,10 @@ export class PlayerEvents {
     {
         socket.on('destroyObject', (data: any) => {
             let objects: Arc[] = player.getObjects()
-
+            if(objects[data.index] == null){
+                return
+            }
             objects[data.index].destroy()
-
-            objects.splice(data.index, 1)
         })
     }
     public static initAll(player: Player, socket: SocketIOClient.Socket) : void 

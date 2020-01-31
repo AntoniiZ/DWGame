@@ -22,12 +22,12 @@ app.use('/client', clientRouter)
 
 let spawnObjectsTimeout: NodeJS.Timeout
 let objects: any = [], explosions: any = []
-let players: Map<string, Player> = new Map()
+let players: Map<string, any> = new Map()
 let gameMapBounds: number[] = GameMap.settings.size;
 
 function spawnObjects(): void {
     /// move magic number divisor 20 in game map config
-    if (objects.length >= (gameMapBounds[0] + gameMapBounds[1]) / 600 * players.size) {
+    if (objects.length >= 10 * (players.size)) {
         clearTimeout(spawnObjectsTimeout)
         return
     }
@@ -72,6 +72,9 @@ function spawnObjects(): void {
             }
         }
         for (let i = 0; i < objects.length; i++) {
+            if(objects[i] == null){
+                continue
+            }
             if (Math.sqrt(Math.abs(objects[i].x - gameObject.x) ** 2 + Math.abs(objects[i].y - gameObject.y) ** 2) <
                 gameObject.radius + objects[i].radius) {
                 collide = true
@@ -84,13 +87,14 @@ function spawnObjects(): void {
             io.of('/client').emit('spawnObject', gameObject)
 
             isSpawned = true
+            updateObject(objects.length-1)
         }
 
     }
     spawnObjectsTimeout = setTimeout(spawnObjects, 100)
 }
 
-function updateObjects(): void {
+/*function updateObjects(): void {
 
     for (let i = objects.length - 1; i >= 0; i--) {
         if (objects[i].vel.x && objects[i].vel.y && !objects[i].randomNum) {
@@ -137,6 +141,31 @@ function updateObjects(): void {
                 'y': objects[i].vel.y
             }
         })
+        for(let k = 0; k < objects.length; k++){
+            if(i == k){
+                continue
+            }
+            if (!(Math.sqrt(Math.abs(objects[i].x - objects[k].x) ** 2 + Math.abs(objects[i].y - objects[k].y) ** 2) <
+                objects[k].radius + objects[i].radius)) {
+                continue
+            }
+            
+            if (!objects[i].randomNum && !objects[k].randomNum) {
+                
+                let indCmp: boolean = i < k
+                objects.splice(i, 1)
+                indCmp ? objects.splice(k-1, 1) : objects.splice(k, 1)
+
+                io.of('/client').emit('destroyObject', {
+                    'index': i--
+                })
+                io.of('/client').emit('destroyObject', {
+                    'index': k
+                })
+                break
+            }
+        }
+
         for (const player of players) {
             if (!(Math.sqrt(Math.abs(objects[i].x - player[1].getShape().x) ** 2 + Math.abs(objects[i].y - player[1].getShape().y) ** 2) <
                 player[1].getShape().radius + objects[i].radius)) {
@@ -167,8 +196,113 @@ function updateObjects(): void {
     setTimeout(updateObjects, 1000 / 60)
 }
 updateObjects()
+*/
+let timeout: NodeJS.Timeout[] = []
+function updateObject(i: number): void {
+    if(objects[i] == null){
+        return
+    }
 
+    if (objects[i].vel.x && objects[i].vel.y && !objects[i].randomNum) {
 
+        objects[i].x += objects[i].speed * objects[i].vel.x
+        objects[i].y += objects[i].speed * objects[i].vel.y
+
+        if (objects[i].x <= -gameMapBounds[0] / 2 + objects[i].radius) {
+            objects[i].x = -gameMapBounds[0] / 2 + objects[i].radius
+            objects[i].vel.x = -objects[i].vel.x
+        }
+        else if (objects[i].x >= gameMapBounds[0] / 2 - objects[i].radius) {
+            objects[i].x = gameMapBounds[0] / 2 - objects[i].radius
+            objects[i].vel.x = -objects[i].vel.x
+        }
+
+        if (objects[i].y <= -gameMapBounds[1] / 2 + objects[i].radius) {
+            objects[i].y = -gameMapBounds[1] / 2 + objects[i].radius
+            objects[i].vel.y = -objects[i].vel.y
+        }
+        else if (objects[i].y >= gameMapBounds[1] / 2 - objects[i].radius) {
+            objects[i].y = gameMapBounds[1] / 2 - objects[i].radius
+            objects[i].vel.y = -objects[i].vel.y
+        }
+
+    }
+
+    if (objects[i].radius >= objects[i].initialRadius * 1.25 ||
+        objects[i].radius <= objects[i].initialRadius * 0.75) {
+
+        // 50 100 150 (/2, *1.5) | 75 100 125
+        objects[i].radDelta = -objects[i].radDelta;
+    }
+
+    objects[i].radius += objects[i].radDelta
+    io.of('/client').emit('updateObject', {
+        'index': i,
+        'x': objects[i].x,
+        'y': objects[i].y,
+        'radius': objects[i].radius,
+        'speed': objects[i].speed,
+        'vel': {
+            'x': objects[i].vel.x,
+            'y': objects[i].vel.y
+        }
+    })
+
+    for (let k = 0; k < objects.length; k++) {
+        if (i == k || objects[k] == null) {
+            continue
+        }
+        if (!(Math.sqrt(Math.abs(objects[i].x - objects[k].x) ** 2 + Math.abs(objects[i].y - objects[k].y) ** 2) <
+            objects[k].radius + objects[i].radius)) {
+            continue
+        }
+
+        if (!objects[i].randomNum && !objects[k].randomNum) {
+
+            clearTimeout(timeout[i])
+            clearTimeout(timeout[k])
+            objects[i] = objects[k] = null
+
+            io.of('/client').emit('destroyObject', {
+                'index': i
+            })
+            io.of('/client').emit('destroyObject', {
+                'index': k
+            })
+            return
+        }
+    }
+
+    for (const player of players) {
+        if (!(Math.sqrt(Math.abs(objects[i].x - player[1].x) ** 2 + Math.abs(objects[i].y - player[1].y) ** 2) <
+            player[1].radius + objects[i].radius)) {
+            continue
+        }
+        if (!objects[i].randomNum) {
+            objects[i].vel.x = objects[i].vel.y = 0
+            io.of('/client').emit('updateObject', {
+                'index': i,
+                'x': objects[i].x,
+                'y': objects[i].y,
+                'radius': objects[i].radius,
+                'speed': objects[i].speed,
+                'vel': {
+                    'x': objects[i].vel.x,
+                    'y': objects[i].vel.y
+                }
+            })
+            continue
+        }
+        objects[i] = null
+        clearTimeout(timeout[i])
+        io.of('/client').emit('destroyObject', {
+            'index': i
+        })
+        return
+    }
+
+    timeout[i] = setTimeout(updateObject, 1000 / 60, i)
+}
 io.of('/client').on("connection", (socket: Socket) => {
     console.log(`Server: User ${socket.id} connected`)
 
@@ -185,14 +319,17 @@ io.of('/client').on("connection", (socket: Socket) => {
 
     socket.on('spawnPlayer', (data: any) => {
 
-        players.set(socket.id, new Player(
-            data.scene,
-            data.graphics,
-            data.shape,
-            data.speed,
-            socket.id,
-            data.velocity,
-        ))
+        players.set(socket.id, {
+            'x': data.x,
+            'y': data.y,
+            'radius': data.radius,
+            'color': data.color,
+            'speed': data.speed,
+            'vel': {
+                'x': data.vel.x,
+                'y': data.vel.y
+            }
+        })
         data.id = socket.id
 
         spawnObjects()
@@ -205,6 +342,9 @@ io.of('/client').on("connection", (socket: Socket) => {
         if (!players.has(socket.id) || socket.id == undefined) {
             return
         }
+        if(objects[data.index] == null){
+            return
+        }
 
         Object.assign(objects[data.index], data)
 
@@ -215,8 +355,8 @@ io.of('/client').on("connection", (socket: Socket) => {
         if (!players.has(socket.id) || socket.id == undefined) {
             return
         }
-        objects.splice(data.index, 1)
-        spawnObjects()
+        objects[data.index] = null
+        //spawnObjects()
 
         socket.broadcast.emit('destroyObject', data)
 
@@ -227,9 +367,11 @@ io.of('/client').on("connection", (socket: Socket) => {
             return
         }
 
-        let shape: Phaser.GameObjects.Arc = players.get(socket.id).getShape()
-        shape.x = data.x; shape.y = data.y; shape.radius = data.radius; shape.fillColor = data.color
         data.id = socket.id
+
+        let player: any = players.get(socket.id)
+
+        Object.assign(player, data)
 
         socket.broadcast.emit('updatePlayer', data)
     })
@@ -240,7 +382,7 @@ io.of('/client').on("connection", (socket: Socket) => {
         }
         console.log(`Server: User ${socket.id} disconnected`)
         players.delete(socket.id)
-        spawnObjects()
+        // spawnObjects()
 
         socket.broadcast.emit('disconnectPlayer', socket.id)
     })

@@ -87,7 +87,7 @@ export class MainScene extends NetworkScene {
 
         let objects: Arc[] = this.player.getObjects()
         for (let i: number = 0; i < objects.length; i++) {
-            if(objects[i].getShape() == null){
+            if(objects[i] == null || objects[i].getShape() == null){
                 continue
             }
             if (this.player.canSeeObject(objects[i])) {
@@ -99,7 +99,9 @@ export class MainScene extends NetworkScene {
                 this.player.updatePlayer(this.getSocket())
                 if(objects[i].getShape() != null){
                     this.player.updateObject(i, objects[i], this.getSocket())
+                    continue
                 }
+                this.player.destroyObject(i, this.getSocket())
                 continue
             } 
             objects[i].getGraphics().clear()

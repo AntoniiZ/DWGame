@@ -26,12 +26,17 @@ export class Player extends BouncyWall {
     }
 
     public spawnPlayer(socket: SocketIOClient.Socket): SocketIOClient.Socket {
+        let shape: Phaser.GameObjects.Arc = this.getShape()
         return socket.emit('spawnPlayer', {
-            'scene': this.getScene().scene.key,
-            'graphics': this.getGraphics(),
-            'shape': this.getShape(),
+            'x': shape.x,
+            'y': shape.y,
+            'radius': shape.radius,
+            'color': shape.fillColor,
             'speed': this.getSpeed(),
-            'velocity': this.getVelocity()
+            'vel': {
+                'x': this.getVelocity().x,
+                'y': this.getVelocity().y
+            }
         })
     }
 
