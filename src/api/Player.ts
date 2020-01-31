@@ -45,6 +45,29 @@ export class Player extends BouncyWall {
             'color': shape.fillColor
         })
     }
+    public updateObject(index: number, object: Arc, socket: SocketIOClient.Socket): SocketIOClient.Socket {
+
+        let shape: Phaser.GameObjects.Arc = object.getShape()
+
+        return socket.emit('updateObject', {
+            index: index,
+            x: shape.x,
+            y: shape.y,
+            radius: shape.radius,
+            speed: object.getSpeed(),
+            vel: {
+                x: object.getVelocity().x,
+                y: object.getVelocity().y
+            }
+        })
+    }
+
+    public destroyObject(index: number, socket: SocketIOClient.Socket): SocketIOClient.Socket {
+        
+        return socket.emit('destroyObject', {
+            index: index
+        })
+    }
 
     public getOtherPlayers(): Map<string, Player> {
         return this.players

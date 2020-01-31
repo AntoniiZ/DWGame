@@ -70,7 +70,7 @@ export class PlayerEvents {
     {
         socket.on('updatePlayer', (data: any) => {
 
-            if(!player.getOtherPlayers().has(data.id)){
+            if(!player.getOtherPlayers().has(data.id) || data.id == player.getSocketId()){
                 return
             }
 
@@ -87,10 +87,8 @@ export class PlayerEvents {
     {
         socket.on('disconnectPlayer', (data: string) => {
             let deletedPlayer: Player = player.getOtherPlayers().get(data)
-            deletedPlayer.getGraphics().destroy()
 
-            let shape: Phaser.GameObjects.Shape = deletedPlayer.getShape()
-            shape = null
+            deletedPlayer.destroy()
 
             player.getOtherPlayers().delete(data)
         })
@@ -99,7 +97,7 @@ export class PlayerEvents {
     {
         socket.on('spawnObject', (data: any) => {
 
-            console.log(`Client: received object at ${data.x}:${data.y}`)
+            //console.log(`Client: received object at ${data.x}:${data.y}`)
             let scene = player.getScene()
             let objects: Arc[] = player.getObjects()
 
@@ -112,20 +110,34 @@ export class PlayerEvents {
                 data.radius
             ).setFillStyle(color)
 
-            data.randomNum ? objects.push(
-                new Food(
-                    scene,
-                    scene.add.graphics(),
-                    shape
-                )
-            ) : 
-            objects.push(
-                new BouncyWall(
-                    scene,
-                    scene.add.graphics(),
-                    shape
-                )
-            )
+            data.randomNum ? 
+                objects.push(new Food(scene, scene.add.graphics(), shape)) : 
+                objects.push(new BouncyWall(scene, scene.add.graphics(), shape))
+        })
+    }
+    private static updateObject(player: Player, socket: SocketIOClient.Socket) : void
+    {
+        socket.on('updateObject', (data: any) => {
+            
+            let objects: Arc[] = player.getObjects()
+
+            if(!(objects[data.index] instanceof Arc) || objects[data.index].getShape() == null)
+            {
+                return
+            }
+            objects[data.index].setSpeed(data.speed)
+            objects[data.index].setVelocity(data.vel.x, data.vel.y)
+            objects[data.index].getShape().setPosition(data.x, data.y).setRadius(data.radius)
+        })
+    }
+    private static destroyObject(player: Player, socket: SocketIOClient.Socket) : void
+    {
+        socket.on('destroyObject', (data: any) => {
+            let objects: Arc[] = player.getObjects()
+
+            objects[data.index].destroy()
+
+            objects.splice(data.index, 1)
         })
     }
     public static initAll(player: Player, socket: SocketIOClient.Socket) : void 
@@ -135,6 +147,8 @@ export class PlayerEvents {
         this.updatePlayer(player, socket)
         this.disconnectPlayer(player, socket)
         this.spawnObject(player, socket)
+        this.updateObject(player, socket)
+        this.destroyObject(player, socket)
 
         player.getScene().input.on('pointermove', () => this.onPointerMove(player))
     }

@@ -1,19 +1,20 @@
 export var settings = 
 {
     /// map size & objects count
-    'size': [6000, 6000],
-    'amountOfRandomObjects': 300,
+    'size': [3000, 3000],
+    'gridStep': 100,
+    'amountOfRandomObjects': 600,
     /// drawing & stroke
     'strokeLineWidth': 6,
     'strokeRGBAdjustment': [15, 15, 15],
     'drawShapesAlpha': 0.9,
     ////player
-    'playerSpawnCoordsRange': [-3000, 3000],
+    'playerSpawnCoordsRange': [-1500, 1500],
     'playerMinRadius': 25,
     'playerRadius': 64,
     'playerSpeed': 5,
     'playerColor': 0xaffffa,
-    'playerWallRadiusReductionCoef': 1.21125,
+    'playerWallRadiusReductionCoef': 1.11125,
     ///food
     'foodRadiusRange': [15, 35],
     'foodColorRange': [
@@ -22,7 +23,7 @@ export var settings =
         [50, 50]
     ],
     ///walls
-    'wallsRadiusRange': [30, 50],
+    'wallsRadiusRange': [40, 50],
     'wallsColorRange': [
         [255, 255], 
         [94, 154], 

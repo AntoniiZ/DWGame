@@ -1,5 +1,7 @@
 import { Arc } from "./Arc";
 import * as GameMap from "./GameMapConfig"
+import { game } from "../client/game";
+
 export class BouncyWall extends Arc {
 
     public constructor(scene: Phaser.Scene, graphics: Phaser.GameObjects.Graphics, shape: Phaser.GameObjects.Arc, 
@@ -8,25 +10,40 @@ export class BouncyWall extends Arc {
     }
 
     public move() : void {
+
+        let bounds: number[] = GameMap.settings.size
+        
         this.getShape().x += this.getVelocity().x * this.getSpeed()
         this.getShape().y += this.getVelocity().y * this.getSpeed()
 
-        let bounds: number[] = GameMap.settings.size
+        if (this.getShape().x <= -bounds[0] / 2 + this.getShape().radius) {
+            this.getShape().x = -bounds[0] / 2 + this.getShape().radius
+            this.setVelocity(-this.getVelocity().x, this.getVelocity().y)
+        }
+        else if (this.getShape().x >= bounds[0] / 2 - this.getShape().radius) {
+            this.getShape().x = bounds[0] / 2 - this.getShape().radius
+            this.setVelocity(-this.getVelocity().x, this.getVelocity().y)
+        }
 
-        let copyX: Number = new Number(this.getShape().x)
-        let copyY: Number = new Number(this.getShape().y)
+        if (this.getShape().y <= -bounds[1] / 2 + this.getShape().radius) {
+            this.getShape().y = -bounds[1] / 2 + this.getShape().radius
+            this.setVelocity(this.getVelocity().x, -this.getVelocity().y)
 
-        this.getShape().x = Phaser.Math.Clamp(this.getShape().x, -bounds[0]/2 + this.getShape().radius, bounds[0]/2 - this.getShape().radius)
-        this.getShape().y = Phaser.Math.Clamp(this.getShape().y, -bounds[1]/2 + this.getShape().radius, bounds[1]/2 - this.getShape().radius)
+        }
+        else if (this.getShape().y >= bounds[1] / 2 - this.getShape().radius) {
+            this.getShape().y = bounds[1] / 2 - this.getShape().radius
+            this.setVelocity(this.getVelocity().x, -this.getVelocity().y)
+        }
+
     }
 
     public actTowards(arc: Arc) : void {
 
-        this.setSpeed(arc.getSpeed())
+        this.setSpeed(arc.getSpeed()/(this.getShape().radius / arc.getShape().radius))
         this.setVelocity(arc.getVelocity().x, arc.getVelocity().y)
 
-        arc.getShape().x -= arc.getVelocity().x * arc.getSpeed()
-        arc.getShape().y -= arc.getVelocity().y * arc.getSpeed()
+        arc.getShape().x -= arc.getVelocity().x * arc.getSpeed()*2
+        arc.getShape().y -= arc.getVelocity().y * arc.getSpeed()*2
 
         if(arc.getShape().radius > GameMap.settings.playerMinRadius){
             arc.getShape().radius /= GameMap.settings.playerWallRadiusReductionCoef
