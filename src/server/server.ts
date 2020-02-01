@@ -87,7 +87,7 @@ function spawnObjects(): void {
             io.of('/client').emit('spawnObject', gameObject)
 
             isSpawned = true
-            updateObject(objects.length-1)
+            //updateObject(objects.length-1)
         }
 
     }
@@ -197,6 +197,7 @@ function spawnObjects(): void {
 }
 updateObjects()
 */
+/*
 let timeout: NodeJS.Timeout[] = []
 function updateObject(i: number): void {
     if(objects[i] == null){
@@ -303,6 +304,7 @@ function updateObject(i: number): void {
 
     timeout[i] = setTimeout(updateObject, 1000 / 60, i)
 }
+*/
 io.of('/client').on("connection", (socket: Socket) => {
     console.log(`Server: User ${socket.id} connected`)
 
@@ -345,7 +347,6 @@ io.of('/client').on("connection", (socket: Socket) => {
         if(objects[data.index] == null){
             return
         }
-
         Object.assign(objects[data.index], data)
 
         socket.broadcast.emit('updateObject', data)
@@ -370,7 +371,6 @@ io.of('/client').on("connection", (socket: Socket) => {
         data.id = socket.id
 
         let player: any = players.get(socket.id)
-
         Object.assign(player, data)
 
         socket.broadcast.emit('updatePlayer', data)

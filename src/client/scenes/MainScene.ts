@@ -9,28 +9,24 @@ import { NetworkScene } from "./NetworkScene";
 import { Player } from "../../api/Player";
 
 export class MainScene extends NetworkScene {
+
     private player: Player
+    private worker: Worker
     private gameMapBounds: number[] = GameMap.settings.size
 
     public constructor() {
         super("MainScene")
     }
-    public preload(): void {
-        //this.load.image('background', '../assets/Map1.jpg')
-    }
-
+    
     public create(): void {
 
         let step = GameMap.settings.gridStep
 
-        for(let x: number = -this.gameMapBounds[0]/2 + step/2; x < this.gameMapBounds[0]/2 + step/2; x += step){
-            for(let y: number = -this.gameMapBounds[1]/2 + step/2; y < this.gameMapBounds[1]/2 + step/2; y += step){
+        for (let x: number = -this.gameMapBounds[0] / 2 + step / 2; x < this.gameMapBounds[0] / 2 + step / 2; x += step) {
+            for (let y: number = -this.gameMapBounds[1] / 2 + step / 2; y < this.gameMapBounds[1] / 2 + step / 2; y += step) {
                 this.add.rectangle(x, y, step, step).setStrokeStyle(2, Phaser.Display.Color.GetColor(4, 85, 163), 0.8)
             }
         }
-        //this.gameMapBounds = GameMap.settings.size = [3000, 3000]
-        /*this.add.image(-GameMap.settings.size[0]/2, -GameMap.settings.size[1]/2, 'background').setOrigin(0, 0)
-            .setDisplaySize(GameMap.settings.size[0], GameMap.settings.size[1])*/
 
         this.player = new Player(
             this,
@@ -64,46 +60,72 @@ export class MainScene extends NetworkScene {
 
         this.player.spawnPlayer(this.getSocket())
         this.player.updatePlayer(this.getSocket())
+
+        let blob: Blob = new Blob([
+            `
+            onmessage = function k(e) { 
+                postMessage('msg from worker'); 
+                ${this.pseudoUpdate(this.player, this.getSocket())}
+            }
+            `
+        ]);
+
+        let blobURL = window.URL.createObjectURL(blob);
+        
+        this.worker = new Worker(blobURL);
+        this.worker.onmessage = () => {
+          this.pseudoUpdate(this.player, this.getSocket())
+          console.log("working...")
+        };
+
     }
-    public update(): void {
+    public update() : void {
+        this.worker.postMessage('start')
+    }
+
+    public pseudoUpdate(player: Player, socket: SocketIOClient.Socket): void {
         //console.log(this.game.loop.actualFps) ~LAST_CHECKED_GOOD
 
-        this.player.move()
-        this.player.updatePlayer(this.getSocket())
-        this.player.draw()
-        
-        for (let [otherPlayerSocketId, otherPlayer] of this.player.getOtherPlayers()) {
+        player.move()
+        player.updatePlayer(socket)
+        player.draw()
+
+        for (let [otherPlayerSocketId, otherPlayer] of player.getOtherPlayers()) {
             //otherPlayer.move()
-            if (!this.player.canSeeObject(otherPlayer)) {
+            if (!player.canSeeObject(otherPlayer)) {
                 otherPlayer.getGraphics().clear()
                 continue
             }
-            if (this.player.collidesWith(otherPlayer)) {
-                this.player.setVelocity(0, 0)
-                this.player.updatePlayer(this.getSocket())
-            } 
+            if (player.collidesWith(otherPlayer)) {
+                player.setVelocity(0, 0)
+                player.updatePlayer(socket)
+            }
             otherPlayer.draw()
         }
 
-        let objects: Arc[] = this.player.getObjects()
+        let objects: Arc[] = player.getObjects()
         for (let i: number = 0; i < objects.length; i++) {
-            if(objects[i] == null || objects[i].getShape() == null){
+            if (objects[i] == null || objects[i].getShape() == null) {
                 continue
             }
-            if (this.player.canSeeObject(objects[i])) {
+            //interpolation
+            objects[i].move()
+            //player.updateObject(i, objects[i], socket)
+            //interpolation
+            if (player.canSeeObject(objects[i])) {
                 objects[i].draw()
-                if(!this.player.collidesWith(objects[i])){
+                if (!player.collidesWith(objects[i])) {
                     continue
                 }
-                objects[i].actTowards(this.player)
-                this.player.updatePlayer(this.getSocket())
-                if(objects[i].getShape() != null){
-                    this.player.updateObject(i, objects[i], this.getSocket())
+                objects[i].actTowards(player)
+                player.updatePlayer(socket)
+                if (objects[i].getShape() != null) {
+                    player.updateObject(i, objects[i], socket)
                     continue
                 }
-                this.player.destroyObject(i, this.getSocket())
+                player.destroyObject(i, socket)
                 continue
-            } 
+            }
             objects[i].getGraphics().clear()
         }
     }
