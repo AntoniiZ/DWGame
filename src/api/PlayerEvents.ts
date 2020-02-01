@@ -8,6 +8,9 @@ export class PlayerEvents {
 
     private static onPointerMove(player: Player) : void
     {
+        if(player == null){
+            return
+        }
         const transformedPoint: Phaser.Math.Vector2 = player.getScene().cameras.main.getWorldPoint(
             player.getScene().input.x, 
             player.getScene().input.y
@@ -22,7 +25,18 @@ export class PlayerEvents {
 
         player.setVelocity(Math.cos(angle), Math.sin(angle))
     }
+    private static onPointerMoveSpectator(player: Player) : void
+    {
+        if(player == null){
+            return
+        }
+        const transformedPoint: Phaser.Math.Vector2 = player.getScene().cameras.main.getWorldPoint(
+            player.getScene().input.x, 
+            player.getScene().input.y
+        );
 
+        player.getShape().setPosition(transformedPoint.x, transformedPoint.y)
+    }
     private static spawnPlayer(player: Player, socket: SocketIOClient.Socket) : void 
     {
         socket.on('spawnPlayer', (data: any) => {
@@ -146,6 +160,19 @@ export class PlayerEvents {
         this.destroyObject(player, socket)
 
         player.getScene().input.on('pointermove', () => this.onPointerMove(player))
+    }
+
+    public static initAllSpectator(player: Player, socket: SocketIOClient.Socket) : void 
+    {
+        this.getConnectedPlayers(player, socket)
+        this.spawnPlayer(player, socket)
+        this.updatePlayer(player, socket)
+        this.disconnectPlayer(player, socket)
+        this.spawnObject(player, socket)
+        this.updateObject(player, socket)
+        this.destroyObject(player, socket)
+
+        player.getScene().input.on('pointermove', () => this.onPointerMoveSpectator(player))
     }
 
 }

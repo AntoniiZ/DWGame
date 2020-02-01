@@ -2,7 +2,7 @@ import { Arc } from "./Arc";
 import { Food } from "./Food";
 import { BouncyWall } from "./BouncyWall";
 import * as GameMap from "./GameMapConfig"
-
+import * as config from "../server/config"
 export class Player extends BouncyWall {
 
     private socketId: string
@@ -123,6 +123,18 @@ export class Player extends BouncyWall {
             'shape': newArc.getShape()
         })
 
+    }
+
+    public disconnect(socket: SocketIOClient.Socket) : SocketIOClient.Socket {
+        this.destroy()
+        for(let i = 0; i < this.objects.length; i++){
+            if(this.objects[i] == null){
+                continue
+            }
+            this.objects[i].destroy()
+            this.objects[i] = null
+        }
+        return socket.disconnect()
     }
     
 

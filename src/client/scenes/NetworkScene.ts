@@ -16,4 +16,9 @@ export class NetworkScene extends Phaser.Scene
         return this.socket
     }
 
+    public initSocket() : void
+    {
+        this.socket = socketio(`http://localhost:${config.default.server_port}/client`)
+    }
+
 }

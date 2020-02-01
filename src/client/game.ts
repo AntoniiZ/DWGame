@@ -1,5 +1,6 @@
 import 'phaser'
-import {MainScene} from "./scenes/MainScene"
+import { MainScene } from "./scenes/MainScene"
+import { SpectatorScene } from "./scenes/SpectatorScene"
 
 const config: Phaser.Types.Core.GameConfig = {
 
@@ -23,7 +24,7 @@ const config: Phaser.Types.Core.GameConfig = {
     }
   },
   backgroundColor: Phaser.Display.Color.GetColor(4, 115, 193),
-  scene: [MainScene]
+  scene: [MainScene, SpectatorScene]
 }
 
 class Game extends Phaser.Game {

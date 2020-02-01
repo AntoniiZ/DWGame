@@ -7,19 +7,21 @@ import { PlayerEvents } from "../../api/PlayerEvents";
 import * as GameMap from "../../api/GameMapConfig";
 import { NetworkScene } from "./NetworkScene";
 import { Player } from "../../api/Player";
+import * as config from '../../server/config'
+import * as socketio from 'socket.io-client'
 
 export class MainScene extends NetworkScene {
 
     private player: Player
-    private worker: Worker
     private gameMapBounds: number[] = GameMap.settings.size
 
     public constructor() {
         super("MainScene")
     }
-    
-    public create(): void {
 
+    public create(): void {
+        this.initSocket()
+        
         let step = GameMap.settings.gridStep
 
         for (let x: number = -this.gameMapBounds[0] / 2 + step / 2; x < this.gameMapBounds[0] / 2 + step / 2; x += step) {
@@ -61,28 +63,18 @@ export class MainScene extends NetworkScene {
         this.player.spawnPlayer(this.getSocket())
         this.player.updatePlayer(this.getSocket())
 
-        let blob: Blob = new Blob([
-            `
-            onmessage = function k(e) { 
-                postMessage('msg from worker'); 
-                ${this.pseudoUpdate(this.player, this.getSocket())}
-            }
-            `
-        ]);
+        document.addEventListener("visibilitychange", () => { 
+            if(document["hidden"]){
+                this.player.disconnect(this.getSocket())
+                this.scene.start('SpectatorScene')
 
-        let blobURL = window.URL.createObjectURL(blob);
-        
-        this.worker = new Worker(blobURL);
-        this.worker.onmessage = () => {
-          this.pseudoUpdate(this.player, this.getSocket())
-          console.log("working...")
-        };
-
+            } 
+        })
+          
     }
-    public update() : void {
-        this.worker.postMessage('start')
+    public update(): void {
+        this.pseudoUpdate(this.player, this.getSocket())
     }
-
     public pseudoUpdate(player: Player, socket: SocketIOClient.Socket): void {
         //console.log(this.game.loop.actualFps) ~LAST_CHECKED_GOOD
 
