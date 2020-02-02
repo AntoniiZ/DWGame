@@ -5,11 +5,19 @@ export abstract class GameObject {
     private velocity: Phaser.Geom.Point
     private displayCoords: Phaser.Geom.Point
 
-    public constructor(scene: Phaser.Scene, speed: number, velocity: Phaser.Geom.Point)
+    public constructor(scene: Phaser.Scene, speed?: number, velocity?: Phaser.Geom.Point)
     {
         this.scene = scene
-        this.speed = speed
-        this.velocity = velocity
+        if(speed == null){
+            this.speed = 0
+        } else {
+            this.speed = speed
+        }
+        if(velocity == null){
+            this.velocity = new Phaser.Geom.Point(0, 0)
+        } else {
+            this.velocity = velocity
+        }
     }
 
     public getScene() : Phaser.Scene {

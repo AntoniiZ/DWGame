@@ -42,20 +42,15 @@ export class SpectatorScene extends Phaser.Scene {
         )
 
         this.spectator = new Player(
-            this, this.add.graphics(), new Phaser.GameObjects.Arc(this, 0, 0, 2).setFillStyle(0xffffff), 20, this.getSocket().id
+            this.getSocket(), this, this.add.graphics(), 
+            new Phaser.GameObjects.Arc(this, 0, 0, 2).setFillStyle(0xffffff), 20
         )
 
-        PlayerEvents.initAllSpectator(this.spectator, this.getSocket())
+        PlayerEvents.initAllSpectator(this.spectator)
         this.cameras.main.startFollow(this.spectator.getShape(), true, 0.1, 0.1)
-        
-        this.add.text(window.innerWidth/3, 50, 'Spectator mode').setColor('#ffffff').setFontSize(50).setScrollFactor(0, 0)
-    
-        let ellipse = this.add.ellipse(window.innerWidth/2, window.innerHeight-50, 140, 60, 0x000fff).setInteractive().setScrollFactor(0, 0)
-        ellipse.on('pointerdown', () => {
-            this.getSocket().disconnect()
-            this.scene.start('MainScene')
-        })
-        this.add.text(window.innerWidth/2-60, window.innerHeight-60, 'Play again').setColor('#ffffff').setFontSize(20).setScrollFactor(0, 0)
+
+        this.add.text(window.innerWidth/2, 50, 'Spectator').setFontSize(50).setColor('#ffffff').setScrollFactor(0, 0).setOrigin(0.5)
+
     }
     public update(): void {
         this.pseudoUpdate(this.spectator, this.getSocket())
@@ -76,16 +71,48 @@ export class SpectatorScene extends Phaser.Scene {
             if (objects[i] == null || objects[i].getShape() == null) {
                 continue
             }
-            //interpolation
             objects[i].move()
-            spectator.updateObject(i, objects[i], socket)
-            //spectator.updateObject(i, objects[i], socket)
-            //interpolation
+            spectator.updateObject(i, objects[i])
+
             if (spectator.canSeeObject(objects[i])) {
                 objects[i].draw()
                 continue
             }
             objects[i].getGraphics().clear()
+        }
+        for (let i: number = 0; i < objects.length; i++) {
+            if(objects[i] == null || objects[i].getShape() == null)
+            {
+                continue
+            }
+            for (let k: number = 0; k < objects.length; k++) {
+                if(i == k || objects[k] == null || objects[k].getShape() == null){
+                    continue
+                }
+                if(objects[i] instanceof Food && objects[k] instanceof Food){
+                    continue
+                }
+                
+                if(!objects[i].collidesWith(objects[k]))
+                {
+                    continue
+                }
+                
+                objects[k].actTowards(objects[i], spectator)
+
+                if (objects[k].getShape() != null) {
+                    spectator.updateObject(k, objects[k])
+                } else {
+                    spectator.destroyObject(k)
+                }
+
+                if (objects[i].getShape() != null) {
+                    spectator.updateObject(i, objects[i])
+                    continue
+                } 
+                spectator.destroyObject(i)
+                break
+            }
         }
     }
 }

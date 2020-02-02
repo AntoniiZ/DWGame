@@ -1,9 +1,12 @@
 import { Arc } from "./Arc";
+import { Player } from "./Player";
+import { Explosion } from "./Explosion";
 
 export class Food extends Arc {
 
     public constructor(scene: Phaser.Scene, graphics: Phaser.GameObjects.Graphics, shape: Phaser.GameObjects.Arc,
-        speed: number = 0, velocity: Phaser.Geom.Point = new Phaser.Geom.Point(0, 0)){
+        speed?: number, velocity?: Phaser.Geom.Point){
+            
         super(scene, graphics, shape, speed, velocity)
     }
 
@@ -11,9 +14,15 @@ export class Food extends Arc {
     
     public actTowards(arc: Arc) : void 
     {
+        if ((arc instanceof Explosion)) {
+            this.destroy()
+            return
+        }
         let radiusIncrease = (Math.sqrt(arc.getShape().radius**2 + this.getShape().radius**2)) / arc.getShape().radius
         arc.getShape().radius *= radiusIncrease
-        this.getScene().cameras.main.zoom /= (Math.sqrt(radiusIncrease))
+        if(arc instanceof Player){
+            this.getScene().cameras.main.zoom /= (Math.sqrt(radiusIncrease))
+        }
         this.destroy()
     }
 

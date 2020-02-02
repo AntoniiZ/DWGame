@@ -31,6 +31,7 @@ export class MainScene extends NetworkScene {
         }
 
         this.player = new Player(
+            this.getSocket(),
             this,
             this.add.graphics(),
             new Phaser.GameObjects.Arc(
@@ -45,8 +46,7 @@ export class MainScene extends NetworkScene {
                 ),
                 GameMap.settings.playerRadius
             ).setFillStyle(GameMap.settings.playerColor),
-            GameMap.settings.playerSpeed,
-            this.getSocket().id
+            GameMap.settings.playerSpeed
         )
 
         this.cameras.main.setBounds(
@@ -58,14 +58,14 @@ export class MainScene extends NetworkScene {
 
         this.cameras.main.startFollow(this.player.getShape(), true, 0.1, 0.1)
 
-        PlayerEvents.initAll(this.player, this.getSocket())
+        PlayerEvents.initAll(this.player)
 
-        this.player.spawnPlayer(this.getSocket())
-        this.player.updatePlayer(this.getSocket())
+        this.player.spawnPlayer()
+        this.player.updatePlayer()
 
         document.addEventListener("visibilitychange", () => { 
             if(document["hidden"]){
-                this.player.disconnect(this.getSocket())
+                this.player.disconnect()
                 this.scene.start('SpectatorScene')
 
             } 
@@ -79,7 +79,7 @@ export class MainScene extends NetworkScene {
         //console.log(this.game.loop.actualFps) ~LAST_CHECKED_GOOD
 
         player.move()
-        player.updatePlayer(socket)
+        player.updatePlayer()
         player.draw()
 
         for (let [otherPlayerSocketId, otherPlayer] of player.getOtherPlayers()) {
@@ -90,7 +90,7 @@ export class MainScene extends NetworkScene {
             }
             if (player.collidesWith(otherPlayer)) {
                 player.setVelocity(0, 0)
-                player.updatePlayer(socket)
+                player.updatePlayer()
             }
             otherPlayer.draw()
         }
@@ -110,15 +110,50 @@ export class MainScene extends NetworkScene {
                     continue
                 }
                 objects[i].actTowards(player)
-                player.updatePlayer(socket)
+                player.updatePlayer()
                 if (objects[i].getShape() != null) {
-                    player.updateObject(i, objects[i], socket)
+                    player.updateObject(i, objects[i])
                     continue
                 }
-                player.destroyObject(i, socket)
+                player.destroyObject(i)
                 continue
             }
             objects[i].getGraphics().clear()
+        }
+        
+        for (let i: number = 0; i < objects.length; i++) {
+            if(objects[i] == null || objects[i].getShape() == null)
+            {
+                continue
+            }
+            for (let k: number = 0; k < objects.length; k++) {
+                if(i == k || objects[k] == null || objects[k].getShape() == null){
+                    continue
+                }
+                if(objects[i] instanceof Food && objects[k] instanceof Food){
+                    continue
+                }
+                
+                if(!objects[i].collidesWith(objects[k]))
+                {
+                    continue
+                }
+                
+                objects[k].actTowards(objects[i], player)
+
+                if (objects[k].getShape() != null) {
+                    player.updateObject(k, objects[k])
+                } else {
+                    player.destroyObject(k)
+                }
+
+                if (objects[i].getShape() != null) {
+                    player.updateObject(i, objects[i])
+                    continue
+                } 
+                player.destroyObject(i)
+                break
+            }
         }
     }
 }

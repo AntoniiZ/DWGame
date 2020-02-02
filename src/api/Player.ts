@@ -5,29 +5,29 @@ import * as GameMap from "./GameMapConfig"
 import * as config from "../server/config"
 export class Player extends BouncyWall {
 
-    private socketId: string
     private objects: Arc[] = []
+    private socket: SocketIOClient.Socket
     private players: Map<string, Player> = new Map()
 
-    public constructor(scene: Phaser.Scene, graphics: Phaser.GameObjects.Graphics, shape: Phaser.GameObjects.Arc, 
-        speed: number = 0, socketId: string, velocity: Phaser.Geom.Point = new Phaser.Geom.Point(0, 0)){
+    public constructor(socket: SocketIOClient.Socket, scene: Phaser.Scene, graphics: Phaser.GameObjects.Graphics, shape: Phaser.GameObjects.Arc, 
+        speed?: number, velocity?: Phaser.Geom.Point){
         
         super(scene, graphics, shape, speed, velocity)
 
-        this.socketId = socketId
+        this.socket = socket
     }
 
     public move() : void {
         super.move()
     }
 
-    public getSocketId() : string {
-        return this.socketId
+    public getSocket() : SocketIOClient.Socket {
+        return this.socket
     }
 
-    public spawnPlayer(socket: SocketIOClient.Socket): SocketIOClient.Socket {
+    public spawnPlayer(): SocketIOClient.Socket {
         let shape: Phaser.GameObjects.Arc = this.getShape()
-        return socket.emit('spawnPlayer', {
+        return this.socket.emit('spawnPlayer', {
             'x': shape.x,
             'y': shape.y,
             'radius': shape.radius,
@@ -40,21 +40,21 @@ export class Player extends BouncyWall {
         })
     }
 
-    public updatePlayer(socket: SocketIOClient.Socket): SocketIOClient.Socket {
+    public updatePlayer(): SocketIOClient.Socket {
 
         let shape: Phaser.GameObjects.Arc = this.getShape()
-        return socket.emit('updatePlayer', {
+        return this.socket.emit('updatePlayer', {
             'x': shape.x,
             'y': shape.y,
             'radius': shape.radius,
             'color': shape.fillColor
         })
     }
-    public updateObject(index: number, object: Arc, socket: SocketIOClient.Socket): SocketIOClient.Socket {
+    public updateObject(index: number, object: Arc): SocketIOClient.Socket {
 
         let shape: Phaser.GameObjects.Arc = object.getShape()
 
-        return socket.emit('updateObject', {
+        return this.socket.emit('updateObject', {
             index: index,
             x: shape.x,
             y: shape.y,
@@ -67,9 +67,9 @@ export class Player extends BouncyWall {
         })
     }
 
-    public destroyObject(index: number, socket: SocketIOClient.Socket): SocketIOClient.Socket {
+    public destroyObject(index: number): SocketIOClient.Socket {
         
-        return socket.emit('destroyObject', {
+        return this.socket.emit('destroyObject', {
             index: index
         })
     }
@@ -82,7 +82,7 @@ export class Player extends BouncyWall {
         return this.objects
     }
 
-    public spawnRandomObject(socket: SocketIOClient.Socket): SocketIOClient.Socket {
+    public spawnRandomObject(): SocketIOClient.Socket {
         let randomNum: number = Phaser.Math.Between(0, 1)
 
         let randomRadius = randomNum ? 
@@ -116,7 +116,7 @@ export class Player extends BouncyWall {
                 new Phaser.GameObjects.Arc(this.getScene(), randomX, randomY, randomRadius).setFillStyle(randomColor)
             ) 
         
-        return socket.emit('spawnRandomObject', {
+        return this.socket.emit('spawnRandomObject', {
             'randomNum' : randomNum,
             'scene': this.getScene().scene.key,
             'graphics': newArc.getGraphics(),
@@ -125,7 +125,7 @@ export class Player extends BouncyWall {
 
     }
 
-    public disconnect(socket: SocketIOClient.Socket) : SocketIOClient.Socket {
+    public disconnect() : SocketIOClient.Socket {
         this.destroy()
         for(let i = 0; i < this.objects.length; i++){
             if(this.objects[i] == null){
@@ -134,7 +134,7 @@ export class Player extends BouncyWall {
             this.objects[i].destroy()
             this.objects[i] = null
         }
-        return socket.disconnect()
+        return this.socket.disconnect()
     }
     
 

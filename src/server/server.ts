@@ -27,7 +27,7 @@ let gameMapBounds: number[] = GameMap.settings.size;
 
 function spawnObjects(): void {
     /// move magic number divisor 20 in game map config
-    if (objects.length >= 10 * (players.size)) {
+    if (objects.length >= 50 * (players.size)) {
         clearTimeout(spawnObjectsTimeout)
         return
     }

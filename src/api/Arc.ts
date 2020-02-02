@@ -7,7 +7,7 @@ export abstract class Arc extends GameObject {
     private graphics: Phaser.GameObjects.Graphics
 
     public constructor(scene: Phaser.Scene, graphics: Phaser.GameObjects.Graphics, shape: Phaser.GameObjects.Arc, 
-        speed: number = 0, velocity: Phaser.Geom.Point = new Phaser.Geom.Point(0, 0)){
+        speed?: number, velocity?: Phaser.Geom.Point){
 
         super(scene, speed, velocity)
         this.shape = shape
@@ -61,5 +61,5 @@ export abstract class Arc extends GameObject {
         this.graphics.destroy()
     }
 
-    public abstract actTowards(gameObject?: GameObject) : void
+    public abstract actTowards(gameObject?: GameObject, gameObject2?: GameObject) : void
 }
