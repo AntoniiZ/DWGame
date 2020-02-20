@@ -23,7 +23,9 @@ export class SpectatorScene extends Phaser.Scene {
     public getSocket(): SocketIOClient.Socket {
         return this.socket
     }
+
     public create(): void {
+        this.cameras.add(0, 0, window.innerWidth, window.innerHeight).setName('staticCamera')
 
         this.socket = socketio(`http://localhost:${config.default.server_port}/client`)
         let step = GameMap.settings.gridStep
@@ -31,6 +33,7 @@ export class SpectatorScene extends Phaser.Scene {
         for (let x: number = -this.gameMapBounds[0] / 2 + step / 2; x < this.gameMapBounds[0] / 2 + step / 2; x += step) {
             for (let y: number = -this.gameMapBounds[1] / 2 + step / 2; y < this.gameMapBounds[1] / 2 + step / 2; y += step) {
                 this.add.rectangle(x, y, step, step).setStrokeStyle(2, Phaser.Display.Color.GetColor(4, 85, 163), 0.8)
+                .cameraFilter = this.cameras.getCamera('staticCamera').id
             }
         }
 
@@ -49,69 +52,58 @@ export class SpectatorScene extends Phaser.Scene {
         PlayerEvents.initAllSpectator(this.spectator)
         this.cameras.main.startFollow(this.spectator.getShape(), true, 0.1, 0.1)
 
-        this.add.text(window.innerWidth/2, 50, 'Spectator').setFontSize(50).setColor('#ffffff').setScrollFactor(0, 0).setOrigin(0.5)
+        this.add.text(window.innerWidth/2, 50, 'Spectator').setFontSize(50).setColor('#ffffff')
+        .setScrollFactor(0, 0).setOrigin(0.5).cameraFilter = this.cameras.main.id
 
     }
     public update(): void {
-        this.pseudoUpdate(this.spectator, this.getSocket())
+        this.pseudoUpdate(this.spectator)
     }
-    public pseudoUpdate(spectator: Player, socket: SocketIOClient.Socket): void {
-        spectator.move()
-        for (let [otherPlayerSocketId, otherPlayer] of spectator.getOtherPlayers()) {
-            //otherspectator.move()
-            if (!spectator.canSeeObject(otherPlayer)) {
+    public pseudoUpdate(player: Player): void {
+
+        player.move()
+        for (let [otherPlayerSocketId, otherPlayer] of player.getOtherPlayers()) {
+            if (!player.canSeeObject(otherPlayer)) {
                 otherPlayer.getGraphics().clear()
                 continue
             }
             otherPlayer.draw()
         }
 
-        let objects: Arc[] = spectator.getObjects()
-        for (let i: number = 0; i < objects.length; i++) {
-            if (objects[i] == null || objects[i].getShape() == null) {
-                continue
-            }
-            objects[i].move()
-            spectator.updateObject(i, objects[i])
-
-            if (spectator.canSeeObject(objects[i])) {
-                objects[i].draw()
-                continue
-            }
-            objects[i].getGraphics().clear()
-        }
-        for (let i: number = 0; i < objects.length; i++) {
-            if(objects[i] == null || objects[i].getShape() == null)
-            {
-                continue
-            }
-            for (let k: number = 0; k < objects.length; k++) {
-                if(i == k || objects[k] == null || objects[k].getShape() == null){
-                    continue
-                }
-                if(objects[i] instanceof Food && objects[k] instanceof Food){
-                    continue
-                }
-                
-                if(!objects[i].collidesWith(objects[k]))
-                {
-                    continue
-                }
-                
-                objects[k].actTowards(objects[i], spectator)
-
-                if (objects[k].getShape() != null) {
-                    spectator.updateObject(k, objects[k])
+        let objects: Map<string, Arc> = player.getObjects()
+        for (let [id, object] of objects) {
+            if (object.getShape() == null) {
+                objects.delete(id)
+            } else {
+                object.move()
+                if (player.canSeeObject(object)) {
+                    object.draw()
                 } else {
-                    spectator.destroyObject(k)
+                    object.getGraphics().clear()
                 }
+            }
+        }
 
-                if (objects[i].getShape() != null) {
-                    spectator.updateObject(i, objects[i])
-                    continue
-                } 
-                spectator.destroyObject(i)
-                break
+        for (let [id1, object1] of objects) {
+            if (object1.getShape() == null) {
+                objects.delete(id1)
+            } else {
+                for (let [id2, object2] of objects) {
+                    if (object1.getShape() == null) {
+                        objects.delete(id1)
+                        break
+                    }
+                    if(object1 == object2){
+                        continue
+                    }
+                    if (object2.getShape() == null) {
+                        objects.delete(id2)
+                    } else {
+                        if (object2.collidesWith(object1)) {
+                            object2.actTowards(object1, player)
+                        }
+                    }
+                }
             }
         }
     }

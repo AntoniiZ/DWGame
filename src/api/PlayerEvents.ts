@@ -8,9 +8,6 @@ export class PlayerEvents {
 
     private static onPointerMove(player: Player) : void
     {
-        if(player == null){
-            return
-        }
         const transformedPoint: Phaser.Math.Vector2 = player.getScene().cameras.main.getWorldPoint(
             player.getScene().input.x, 
             player.getScene().input.y
@@ -27,9 +24,6 @@ export class PlayerEvents {
     }
     private static onPointerMoveSpectator(player: Player) : void
     {
-        if(player == null){
-            return
-        }
         const transformedPoint: Phaser.Math.Vector2 = player.getScene().cameras.main.getWorldPoint(
             player.getScene().input.x, 
             player.getScene().input.y
@@ -50,24 +44,7 @@ export class PlayerEvents {
 
             player.getOtherPlayers().set(
                 data.id, 
-                new Player(data.socket as SocketIOClient.Socket, scene, graphics, shape, data.speed, velocity)
-            )
-        })
-    }
-    private static getConnectedPlayers(player: Player) : void 
-    {
-        player.getSocket().on('getPlayer', (data: any) => {
-            
-            let otherPlayer = data.player
-            let scene: Phaser.Scene = player.getScene()
-            let graphics: Phaser.GameObjects.Graphics = scene.add.graphics()
-            let shape: Phaser.GameObjects.Arc = new Phaser.GameObjects.Arc(scene)
-            let velocity: Phaser.Geom.Point = new Phaser.Geom.Point(otherPlayer.vel.x, otherPlayer.vel.y)
-
-            shape.setPosition(otherPlayer.x, otherPlayer.y).setRadius(otherPlayer.radius).setFillStyle(otherPlayer.color)
-            player.getOtherPlayers().set(
-                data.id, 
-                new Player(data.socket as SocketIOClient.Socket, scene, graphics, shape, otherPlayer.speed, velocity)
+                new Player(null, scene, graphics, shape, data.speed, velocity)
             )
         })
     }
@@ -85,12 +62,17 @@ export class PlayerEvents {
             updatedPlayerShape.y = data.y
             updatedPlayerShape.radius = data.radius
             updatedPlayerShape.fillColor = data.color
+            updatedPlayer.setSpeed(data.speed)
+            updatedPlayer.setVelocity(data.vel.x, data.vel.y)
         })
     } 
     
     private static disconnectPlayer(player: Player) : void 
     {
         player.getSocket().on('disconnectPlayer', (data: string) => {
+            if(!player.getOtherPlayers().has(data)){
+                return
+            }
             let deletedPlayer: Player = player.getOtherPlayers().get(data)
 
             deletedPlayer.destroy()
@@ -104,12 +86,7 @@ export class PlayerEvents {
 
             //console.log(`Client: received object at ${data.x}:${data.y}`)
             let scene = player.getScene()
-            let objects: Arc[] = player.getObjects()
-
-            if(data == null){
-                objects.push(null)
-                return
-            }
+            let objects: Map<string, Arc> = player.getObjects()
             let color: number = Phaser.Display.Color.GetColor(data.color[0], data.color[1], data.color[2])
             
             let shape: Phaser.GameObjects.Arc = new Phaser.GameObjects.Arc (
@@ -120,57 +97,54 @@ export class PlayerEvents {
             ).setFillStyle(color)
 
             data.randomNum ? 
-                objects.push(new Food(scene, scene.add.graphics(), shape)) : 
-                objects.push(new BouncyWall(scene, scene.add.graphics(), shape))
+                objects.set(data.id, new Food(scene, scene.add.graphics(), shape)) : 
+                objects.set(data.id, new BouncyWall(scene, scene.add.graphics(), shape))
         })
     }
     private static updateObject(player: Player) : void
     {
         player.getSocket().on('updateObject', (data: any) => {
             
-            let objects: Arc[] = player.getObjects()
-
-            if(!(objects[data.index] instanceof Arc) || objects[data.index].getShape() == null)
+            let objects: Map<string, Arc> = player.getObjects()
+            let object: Arc = objects.get(data.id)
+            if(object.getShape() == null)
             {
                 return
             }
-            objects[data.index].setSpeed(data.speed)
-            objects[data.index].setVelocity(data.vel.x, data.vel.y)
-            objects[data.index].getShape().setPosition(data.x, data.y).setRadius(data.radius)
+            object.setSpeed(data.speed)
+            object.setVelocity(data.vel.x, data.vel.y)
+            object.getShape().setPosition(data.x, data.y).setRadius(data.radius)
         })
     }
     private static destroyObject(player: Player) : void
     {
         player.getSocket().on('destroyObject', (data: any) => {
-            let objects: Arc[] = player.getObjects()
-            if(objects[data.index] == null){
-                return
+            let objects: Map<string, Arc> = player.getObjects()
+            if(objects.has(data.id)){
+                objects.get(data.id).destroy()
+                objects.delete(data.id)
             }
-            objects[data.index].destroy()
         })
     }
-    public static initAll(player: Player) : void 
-    {
-        this.getConnectedPlayers(player)
+    private static initAllSocket(player: Player): void {
         this.spawnPlayer(player)
         this.updatePlayer(player)
         this.disconnectPlayer(player)
         this.spawnObject(player)
         this.updateObject(player)
         this.destroyObject(player)
+    }
+    
+    public static initAll(player: Player) : void 
+    {
+        this.initAllSocket(player)
 
         player.getScene().input.on('pointermove', () => this.onPointerMove(player))
     }
 
     public static initAllSpectator(player: Player) : void 
     {
-        this.getConnectedPlayers(player)
-        this.spawnPlayer(player)
-        this.updatePlayer(player)
-        this.disconnectPlayer(player)
-        this.spawnObject(player)
-        this.updateObject(player)
-        this.destroyObject(player)
+        this.initAllSocket(player)
 
         player.getScene().input.on('pointermove', () => this.onPointerMoveSpectator(player))
     }

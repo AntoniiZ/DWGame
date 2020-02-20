@@ -3,7 +3,6 @@ export abstract class GameObject {
     private speed: number
     private scene: Phaser.Scene
     private velocity: Phaser.Geom.Point
-    private displayCoords: Phaser.Geom.Point
 
     public constructor(scene: Phaser.Scene, speed?: number, velocity?: Phaser.Geom.Point)
     {

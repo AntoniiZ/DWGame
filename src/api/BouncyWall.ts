@@ -41,6 +41,14 @@ export class BouncyWall extends Arc {
 
     public actTowards(arc?: Arc, player?: Player): void {
 
+        if ((arc instanceof Explosion)) {
+            this.destroy()
+            return
+        }
+        
+        if (!(arc instanceof BouncyWall)) {
+            return
+        }
         if ((arc instanceof Player)) {
             this.setSpeed(arc.getSpeed() / (this.getShape().radius / arc.getShape().radius))
             this.setVelocity(arc.getVelocity().x, arc.getVelocity().y)
@@ -52,14 +60,6 @@ export class BouncyWall extends Arc {
                 arc.getShape().radius /= GameMap.settings.playerWallRadiusReductionCoef
                 this.getScene().cameras.main.zoom *= (Math.sqrt(GameMap.settings.playerWallRadiusReductionCoef))
             }
-            return
-        }
-        if ((arc instanceof Explosion)) {
-            this.destroy()
-            return
-        }
-        
-        if(!(arc instanceof BouncyWall) || player == null){
             return
         }
         

@@ -3,7 +3,7 @@ export var settings =
     /// map size & objects count
     'size': [3000, 3000],
     'gridStep': 100,
-    'amountOfRandomObjects': 600,
+    'amountOfObjectsPerPlayer': 50,
     /// drawing & stroke
     'strokeLineWidth': 6,
     'strokeRGBAdjustment': [15, 15, 15],
@@ -13,7 +13,11 @@ export var settings =
     'playerMinRadius': 25,
     'playerRadius': 64,
     'playerSpeed': 5,
-    'playerColor': 0xaffffa,
+    'playerColorRange': [
+        [175, 175],
+        [115, 255],
+        [250, 250]
+    ],
     'playerWallRadiusReductionCoef': 1.11125,
     ///food
     'foodRadiusRange': [15, 35],

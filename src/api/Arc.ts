@@ -12,6 +12,8 @@ export abstract class Arc extends GameObject {
         super(scene, speed, velocity)
         this.shape = shape
         this.graphics = graphics
+
+        this.graphics.cameraFilter = this.getScene().cameras.getCamera('staticCamera').id
     }
 
     public getGraphics() : Phaser.GameObjects.Graphics {

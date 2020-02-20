@@ -27,24 +27,23 @@ export class Explosion extends Arc {
         }
 
         this.explosionTimeout = requestAnimationFrame(() => {
-            let objects: Arc[] = this.player.getObjects()
+            let objects: Map<string, Arc> = this.player.getObjects()
 
-            for (let i = 0; i < objects.length; i++) {
-                if (objects[i] == null || objects[i].getShape() == null) {
-                    continue
+            for (let [id, object] of objects) {
+                if (object.collidesWith(this)) {
+                    object.actTowards(this)
+                    if(object.getShape() == null){
+                        objects.delete(id)
+                        this.player.destroyObject(id)
+                    }
                 }
-                if (!objects[i].canSeeObject(this) || !objects[i].collidesWith(this)) {
-                    continue
-                }
-                objects[i].actTowards(this)
-                this.player.destroyObject(i)
-
-                ///handle Player death
             }
 
             this.getShape().radius += GameMap.settings.explosionRadiusAdjustmentValue
-            if (this.player.canSeeObject(this)) {
-                this.draw()
+            this.draw()
+            if(this.collidesWith(this.player) && this.player.getScene().scene.key == 'MainScene'){
+                this.player.disconnect()
+                this.player.getScene().scene.start('SpectatorScene')
             }
             this.actTowards()
         })
