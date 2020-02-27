@@ -44,7 +44,7 @@ export class PlayerEvents {
 
             player.getOtherPlayers().set(
                 data.id, 
-                new Player(null, scene, graphics, shape, data.speed, velocity)
+                new Player(null, data.username, scene, graphics, shape, data.speed, velocity)
             )
         })
     }
@@ -106,6 +106,9 @@ export class PlayerEvents {
         player.getSocket().on('updateObject', (data: any) => {
             
             let objects: Map<string, Arc> = player.getObjects()
+            if(!objects.has(data.id)){
+                return
+            }
             let object: Arc = objects.get(data.id)
             if(object.getShape() == null)
             {

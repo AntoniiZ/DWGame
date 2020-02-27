@@ -2,13 +2,24 @@ import * as express from "express"
 
 var clientRouter = express.Router()
 
-clientRouter.get(/.*(\.js|\.html|\/)/, (req: express.Request, res: express.Response) => {
+function checkAuthenticated(req: any, res: any, next: any) {
+    if(req.isAuthenticated()){
+        return next()
+    }
+    res.redirect('/login')
+}
+
+clientRouter.get(/.*(\.js|\.html|\/)/, checkAuthenticated, (req: any, res: any) => {
     
     if(req.path == '/'){
-        res.redirect(`${req.baseUrl}/index.html`)
-    } else {
-        res.sendFile(`/${req.path}`, {'root': `${__dirname}'../../../client`});
+        return res.redirect(`${req.baseUrl}/index.html`)
     }
+    if(!req.path.endsWith('.html')){
+        return res.sendFile(`/${req.path}`, {root: `${__dirname}'../../../client`});
+    }
+    return res.render('game.ejs', {
+        username: req.user.username
+    })
 })
 
 

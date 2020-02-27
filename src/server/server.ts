@@ -5,23 +5,53 @@ import { Socket } from 'socket.io'
 import apiRouter from './routes/api'
 import assetsRouter from './routes/assets'
 import clientRouter from './routes/client'
+import loginRouter from './routes/login'
+import registerRouter from './routes/register'
+import mainRouter from './routes/main'
+import initializePassport from './passport-config'
 
-import { Player } from '../api/Player'
 import * as GameMap from '../api/GameMapConfig'
 
 const app = express()
 const conf = config.default
-app.set("port", process.env.PORT || conf.server_port)
+const passport = require('passport')
+const flash = require('express-flash')
+const session = require('express-session')
+
+export let users: any[] = []
+
+initializePassport(
+    passport,
+    (username: any) => users.find(user => user.username === username),
+    (id: any) => users.find(user => user.id === id)
+)
 
 let http = require("http").Server(app)
 let io = require("socket.io")(http)
 let uniqid = require('uniqid');
 
+app.set('view-engine', 'ejs')
+app.use(express.urlencoded({ extended: false }))
+
+app.use(flash())
+app.use(session({
+    secret: uniqid(),
+    resave: false,
+    saveUninitialized: false
+}))
+
+app.use(passport.initialize())
+app.use(passport.session())
+
+app.set('port', process.env.PORT || conf.server_port)
+
+app.use('/', mainRouter)
 app.use('/api', apiRouter)
 app.use('/assets', assetsRouter)
 app.use('/client', clientRouter)
+app.use('/login', loginRouter)
+app.use('/register', registerRouter)
 
-let spawnObjectsTimeout: NodeJS.Timeout
 let objects: Map<string, any> = new Map()
 let players: Map<string, any> = new Map()
 
@@ -85,7 +115,7 @@ function spawnObjects(): void {
         io.of('/client').emit('spawnObject', gameObject)
     }
 
-    spawnObjectsTimeout = setTimeout(spawnObjects, 100)
+    setTimeout(spawnObjects, 100)
 }
 
 io.of('/client').on("connection", (socket: Socket) => {

@@ -21,7 +21,7 @@ export class MainScene extends NetworkScene {
     }
 
     public create(): void {
-
+        let playerUsername: string = document.getElementById('username').innerHTML
         this.cameras.add(0, 0, window.innerWidth, window.innerHeight).setName('staticCamera')
 
         let step = GameMap.settings.gridStep
@@ -39,6 +39,7 @@ export class MainScene extends NetworkScene {
         ]
         this.player = new Player(
             this.getSocket(),
+            playerUsername,
             this,
             this.add.graphics(),
             new Phaser.GameObjects.Arc(
@@ -85,6 +86,9 @@ export class MainScene extends NetworkScene {
         for(let [id, otherPlayer] of this.player.getOtherPlayers()){
             sortedPlayers.push(otherPlayer)
         }
+        for(let i: number = 0; i < this.leaderboardPlayerCount; i++){
+            this.lbPlayers[i].setText('')
+        }
         sortedPlayers.sort((a: Player, b: Player) => {
             let ar: number = a.getShape().radius, br: number = b.getShape().radius
 
@@ -101,7 +105,7 @@ export class MainScene extends NetworkScene {
         for(let i: number = 0; i < loopEnd; i++){
             (sortedPlayers[i].getSocket()) ? this.lbPlayers[i].setColor("#ffd700") : this.lbPlayers[i].setColor('#ffffff')
             
-            this.lbPlayers[i].setText(`${i+1} => ${Math.floor(sortedPlayers[i].getShape().radius)}`)
+            this.lbPlayers[i].setText(`${i+1} => ${sortedPlayers[i].getUsername()} | ${Math.floor(sortedPlayers[i].getShape().radius)}`)
         }
     }
     public update(): void {

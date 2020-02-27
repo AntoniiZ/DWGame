@@ -25,6 +25,7 @@ export class SpectatorScene extends Phaser.Scene {
     }
 
     public create(): void {
+        let playerUsername: string = document.getElementById('username').innerHTML
         this.cameras.add(0, 0, window.innerWidth, window.innerHeight).setName('staticCamera')
 
         this.socket = socketio(`http://localhost:${config.default.server_port}/client`)
@@ -45,7 +46,7 @@ export class SpectatorScene extends Phaser.Scene {
         )
 
         this.spectator = new Player(
-            this.getSocket(), this, this.add.graphics(), 
+            this.getSocket(), playerUsername, this, this.add.graphics(), 
             new Phaser.GameObjects.Arc(this, 0, 0, 2).setFillStyle(0xffffff), 20
         )
 
