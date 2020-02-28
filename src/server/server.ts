@@ -1,6 +1,11 @@
 import * as express from 'express'
 import * as config from './config'
+import * as passport from 'passport'
+import * as sio from 'socket.io'
+import * as uniqid from 'uniqid'
 import { Socket } from 'socket.io'
+import * as session from 'express-session'
+import * as GameMap from '../api/GameMapConfig'
 
 import apiRouter from './routes/api'
 import assetsRouter from './routes/assets'
@@ -10,14 +15,7 @@ import registerRouter from './routes/register'
 import mainRouter from './routes/main'
 import initializePassport from './passport-config'
 
-import * as GameMap from '../api/GameMapConfig'
-
-const app = express()
-const conf = config.default
-const passport = require('passport')
-const flash = require('express-flash')
-const session = require('express-session')
-
+const app = express(), conf = config.default
 export let users: any[] = []
 
 initializePassport(
@@ -26,34 +24,29 @@ initializePassport(
     (id: any) => users.find(user => user.id === id)
 )
 
+let flash = require('express-flash')
 let http = require("http").Server(app)
-let io = require("socket.io")(http)
-let uniqid = require('uniqid');
+let io: SocketIO.Server = sio.listen(http)
+let objects: Map<string, any> = new Map(), players: Map<string, any> = new Map()
 
 app.set('view-engine', 'ejs')
+    .set('port', process.env.PORT || conf.server_port)
+
 app.use(express.urlencoded({ extended: false }))
-
-app.use(flash())
-app.use(session({
-    secret: uniqid(),
-    resave: false,
-    saveUninitialized: false
-}))
-
-app.use(passport.initialize())
-app.use(passport.session())
-
-app.set('port', process.env.PORT || conf.server_port)
-
-app.use('/', mainRouter)
-app.use('/api', apiRouter)
-app.use('/assets', assetsRouter)
-app.use('/client', clientRouter)
-app.use('/login', loginRouter)
-app.use('/register', registerRouter)
-
-let objects: Map<string, any> = new Map()
-let players: Map<string, any> = new Map()
+    .use(flash())
+    .use(session({
+        secret: uniqid(),
+        resave: false,
+        saveUninitialized: false
+    }))
+    .use(passport.initialize())
+    .use(passport.session())
+    .use('/', mainRouter)
+    .use('/api', apiRouter)
+    .use('/assets', assetsRouter)
+    .use('/client', clientRouter)
+    .use('/login', loginRouter)
+    .use('/register', registerRouter)
 
 function spawnObjects(): void {
 
@@ -184,7 +177,7 @@ io.of('/client').on("connection", (socket: Socket) => {
     })
 })
 
-http.listen(conf.server_port, () => { 
-    console.log(`server started on port ${conf.server_port}`)
+http.listen(conf.server_port, "0.0.0.0", () => { 
+    console.log(`server started on ${conf.server_ip}:${conf.server_port}`)
     spawnObjects()
 })

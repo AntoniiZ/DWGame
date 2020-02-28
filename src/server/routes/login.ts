@@ -1,5 +1,5 @@
-import * as express from "express";
-const passport = require('passport')
+import * as express from 'express'
+import * as passport from 'passport'
 
 var loginRouter = express.Router()
 
@@ -10,7 +10,7 @@ function checkNotAuthenticated(req: any, res: any, next: any) {
     next()
 }
 
-loginRouter.get('/', checkNotAuthenticated, (req: express.Request, res: express.Response) => {
+loginRouter.get('/', checkNotAuthenticated, (req: any, res: any) => {
     res.render('login.ejs')
 })
 

@@ -1,6 +1,6 @@
-import * as express from "express";
+import * as express from 'express'
+import * as bcrypt from 'bcrypt'
 import { users } from '../server'
-const bcrypt = require('bcrypt')
 
 var registerRouter = express.Router()
 
@@ -11,11 +11,11 @@ function checkNotAuthenticated(req: any, res: any, next: any) {
     next()
 }
 
-registerRouter.get('/', checkNotAuthenticated, (req: express.Request, res: express.Response) => {
+registerRouter.get('/', checkNotAuthenticated, (req: any, res: any) => {
     res.render('register.ejs')
 })
 
-registerRouter.post('/', checkNotAuthenticated, async (req: express.Request, res: express.Response) => {
+registerRouter.post('/', checkNotAuthenticated, async (req: any, res: any) => {
     try {
         const hashedPassword = await bcrypt.hash(req.body.password, 10)
         users.push({

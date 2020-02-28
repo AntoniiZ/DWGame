@@ -1,8 +1,4 @@
-import { game } from "../game"
 import { Arc } from "../../api/Arc";
-import { Food } from "../../api/Food";
-import { Explosion } from "../../api/Explosion";
-import { BouncyWall } from "../../api/BouncyWall";
 import { PlayerEvents } from "../../api/PlayerEvents";
 import * as GameMap from "../../api/GameMapConfig";
 import { NetworkScene } from "./NetworkScene";

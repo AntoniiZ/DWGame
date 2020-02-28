@@ -1,11 +1,6 @@
-import { game } from "../game"
 import { Arc } from "../../api/Arc";
-import { Food } from "../../api/Food";
-import { Explosion } from "../../api/Explosion";
-import { BouncyWall } from "../../api/BouncyWall";
 import { PlayerEvents } from "../../api/PlayerEvents";
 import * as GameMap from "../../api/GameMapConfig";
-import { NetworkScene } from "./NetworkScene";
 import { Player } from "../../api/Player";
 import * as config from '../../server/config'
 import * as socketio from 'socket.io-client'
@@ -28,7 +23,7 @@ export class SpectatorScene extends Phaser.Scene {
         let playerUsername: string = document.getElementById('username').innerHTML
         this.cameras.add(0, 0, window.innerWidth, window.innerHeight).setName('staticCamera')
 
-        this.socket = socketio(`http://localhost:${config.default.server_port}/client`)
+        this.socket = socketio(`http://${config.default.server_ip}:${config.default.server_port}/client`)
         let step = GameMap.settings.gridStep
 
         for (let x: number = -this.gameMapBounds[0] / 2 + step / 2; x < this.gameMapBounds[0] / 2 + step / 2; x += step) {

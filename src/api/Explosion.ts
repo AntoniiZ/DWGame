@@ -27,6 +27,9 @@ export class Explosion extends Arc {
         }
 
         this.explosionTimeout = requestAnimationFrame(() => {
+            if(this.getShape() == null){
+                return
+            }
             let objects: Map<string, Arc> = this.player.getObjects()
 
             for (let [id, object] of objects) {
@@ -34,7 +37,9 @@ export class Explosion extends Arc {
                     object.actTowards(this)
                     if(object.getShape() == null){
                         objects.delete(id)
-                        this.player.destroyObject(id)
+                        if(this.player.getShape() != null){
+                            this.player.destroyObject(id)
+                        }
                     }
                 }
             }
@@ -44,8 +49,9 @@ export class Explosion extends Arc {
             if(this.collidesWith(this.player) && this.player.getScene().scene.key == 'MainScene'){
                 this.player.disconnect()
                 this.player.getScene().scene.start('SpectatorScene')
+            } else {
+                this.actTowards()
             }
-            this.actTowards()
         })
 
     }

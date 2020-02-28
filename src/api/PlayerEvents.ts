@@ -123,10 +123,11 @@ export class PlayerEvents {
     {
         player.getSocket().on('destroyObject', (data: any) => {
             let objects: Map<string, Arc> = player.getObjects()
-            if(objects.has(data.id)){
-                objects.get(data.id).destroy()
-                objects.delete(data.id)
+            if(!objects.has(data.id)){
+                return
             }
+            objects.get(data.id).destroy()
+            objects.delete(data.id)
         })
     }
     private static initAllSocket(player: Player): void {
