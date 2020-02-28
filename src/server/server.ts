@@ -184,7 +184,7 @@ io.of('/client').on("connection", (socket: Socket) => {
     })
 })
 
-http.listen(conf.server_port, () => { 
+http.listen(conf.server_port, "0.0.0.0", () => { 
     console.log(`server started on port ${conf.server_port}`)
     spawnObjects()
 })

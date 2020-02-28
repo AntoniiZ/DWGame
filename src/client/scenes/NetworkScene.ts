@@ -8,7 +8,7 @@ export class NetworkScene extends Phaser.Scene
     public constructor(key: string | Phaser.Types.Scenes.SettingsConfig)
     {
         super(key)
-        this.socket = socketio(`http://localhost:${config.default.server_port}/client`)
+        this.socket = socketio(`http://${config.default.server_ip}:${config.default.server_port}/client`)
     } 
 
     public getSocket() : SocketIOClient.Socket
@@ -18,7 +18,7 @@ export class NetworkScene extends Phaser.Scene
 
     public initSocket() : void
     {
-        this.socket = socketio(`http://localhost:${config.default.server_port}/client`)
+        this.socket = socketio(`http://${config.default.server_ip}:${config.default.server_port}/client`)
     }
 
 }
