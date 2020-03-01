@@ -23,7 +23,9 @@ export class SpectatorScene extends Phaser.Scene {
         let playerUsername: string = document.getElementById('username').innerHTML
         this.cameras.add(0, 0, window.innerWidth, window.innerHeight).setName('staticCamera')
 
-        this.socket = socketio(`http://${config.default.server_ip}:${config.default.server_port}/client`)
+        this.socket = socketio(`http://${config.default.server_ip}:${config.default.server_port}/client`, {
+            reconnection: false
+        })
         let step = GameMap.settings.gridStep
 
         for (let x: number = -this.gameMapBounds[0] / 2 + step / 2; x < this.gameMapBounds[0] / 2 + step / 2; x += step) {

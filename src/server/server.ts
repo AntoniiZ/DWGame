@@ -13,16 +13,10 @@ import clientRouter from './routes/client'
 import loginRouter from './routes/login'
 import registerRouter from './routes/register'
 import mainRouter from './routes/main'
+import logoutRouter from './routes/logout'
 import initializePassport from './passport-config'
 
 const app = express(), conf = config.default
-export let users: any[] = []
-
-initializePassport(
-    passport,
-    (username: any) => users.find(user => user.username === username),
-    (id: any) => users.find(user => user.id === id)
-)
 
 let flash = require('express-flash')
 let http = require("http").Server(app)
@@ -47,6 +41,9 @@ app.use(express.urlencoded({ extended: false }))
     .use('/client', clientRouter)
     .use('/login', loginRouter)
     .use('/register', registerRouter)
+    .use('/logout', logoutRouter)
+
+initializePassport(passport)
 
 function spawnObjects(): void {
 
@@ -110,6 +107,7 @@ function spawnObjects(): void {
 
     setTimeout(spawnObjects, 100)
 }
+spawnObjects()
 
 io.of('/client').on("connection", (socket: Socket) => {
     console.log(`Server: User ${socket.id} connected`)
@@ -166,7 +164,10 @@ io.of('/client').on("connection", (socket: Socket) => {
 
         socket.broadcast.emit('updatePlayer', data)
     })
+    socket.on('createExplosion', (data: any) => {
 
+        socket.broadcast.emit('createExplosion', data)
+    })
     socket.on('disconnect', () => {
         console.log(`Server: User ${socket.id} disconnected`)
         if (players.has(socket.id)) {
@@ -179,5 +180,4 @@ io.of('/client').on("connection", (socket: Socket) => {
 
 http.listen(conf.server_port, "0.0.0.0", () => { 
     console.log(`server started on ${conf.server_ip}:${conf.server_port}`)
-    spawnObjects()
 })

@@ -1,8 +1,9 @@
 import { Arc } from "./Arc"
 import { Player } from "./Player"
-import { game } from "../client/game";
 import { Food } from "./Food";
 import { BouncyWall } from "./BouncyWall";
+import { Explosion } from "./Explosion";
+import * as GameMap from "../api/GameMapConfig";
 
 export class PlayerEvents {
 
@@ -85,7 +86,7 @@ export class PlayerEvents {
         player.getSocket().on('spawnObject', (data: any) => {
 
             //console.log(`Client: received object at ${data.x}:${data.y}`)
-            let scene = player.getScene()
+            let scene: Phaser.Scene = player.getScene()
             let objects: Map<string, Arc> = player.getObjects()
             let color: number = Phaser.Display.Color.GetColor(data.color[0], data.color[1], data.color[2])
             
@@ -130,6 +131,24 @@ export class PlayerEvents {
             objects.delete(data.id)
         })
     }
+    private static createExplosion(player: Player) : void
+    {
+        player.getSocket().on('createExplosion', (data: any) => {
+            let scene: Phaser.Scene = player.getScene()
+            new Explosion(
+                scene, 
+                scene.add.graphics(), 
+                new Phaser.GameObjects.Arc(
+                    scene,
+                    data.x,
+                    data.y,
+                    data.radius
+                ).setFillStyle(GameMap.settings.explosionColorRange),
+                data.maximumRadius,
+                player
+            )
+        })
+    }
     private static initAllSocket(player: Player): void {
         this.spawnPlayer(player)
         this.updatePlayer(player)
@@ -137,6 +156,7 @@ export class PlayerEvents {
         this.spawnObject(player)
         this.updateObject(player)
         this.destroyObject(player)
+        this.createExplosion(player)
     }
     
     public static initAll(player: Player) : void 

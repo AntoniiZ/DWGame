@@ -11,10 +11,12 @@ function checkNotAuthenticated(req: any, res: any, next: any) {
 }
 
 loginRouter.get('/', checkNotAuthenticated, (req: any, res: any) => {
-    res.render('login.ejs')
+    res.render('login.ejs', {
+        message: req.flash('loginMessage')
+    })
 })
 
-loginRouter.post('/', passport.authenticate('local', {
+loginRouter.post('/', passport.authenticate('local-login', {
     successRedirect: '/',
     failureRedirect: '/login',
     failureFlash: true    

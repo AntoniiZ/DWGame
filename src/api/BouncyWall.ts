@@ -2,6 +2,7 @@ import { Arc } from "./Arc";
 import { Player } from "./Player";
 import * as GameMap from "./GameMapConfig"
 import { Explosion } from "./Explosion";
+import { game } from "../client/game";
 
 export class BouncyWall extends Arc {
 
@@ -63,7 +64,7 @@ export class BouncyWall extends Arc {
             return
         }
         
-        new Explosion(
+        let explosion = new Explosion(
             this.getScene(), 
             this.getScene().add.graphics(), 
             new Phaser.GameObjects.Arc(
@@ -75,6 +76,13 @@ export class BouncyWall extends Arc {
             (arc.getShape().radius + this.getShape().radius)*3,
             player
         )
+        player.getSocket().emit('createExplosion', {
+            x: explosion.getShape().x,
+            y: explosion.getShape().y,
+            radius: explosion.getShape().radius,
+            maximumRadius: (arc.getShape().radius + this.getShape().radius)*3
+        })
+
         this.destroy()
         arc.destroy()
 

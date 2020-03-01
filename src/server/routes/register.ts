@@ -1,6 +1,5 @@
 import * as express from 'express'
-import * as bcrypt from 'bcrypt'
-import { users } from '../server'
+import * as passport from 'passport'
 
 var registerRouter = express.Router()
 
@@ -12,22 +11,15 @@ function checkNotAuthenticated(req: any, res: any, next: any) {
 }
 
 registerRouter.get('/', checkNotAuthenticated, (req: any, res: any) => {
-    res.render('register.ejs')
+    res.render('register.ejs', {
+        message: req.flash('registerMessage')
+    })
 })
 
-registerRouter.post('/', checkNotAuthenticated, async (req: any, res: any) => {
-    try {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10)
-        users.push({
-            id: Date.now().toString(),
-            username: req.body.username,
-            password: hashedPassword
-        })
-        res.redirect('/login')
-    } catch {
-        res.redirect('/register')
-    }
-    console.log(users)
-})
+registerRouter.post('/', passport.authenticate('local-register', {
+    successRedirect : '/',
+    failureRedirect : '/register',
+    failureFlash : true
+}));
 
 export default registerRouter
