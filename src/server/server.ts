@@ -110,7 +110,6 @@ function spawnObjects(): void {
 spawnObjects()
 
 io.of('/client').on("connection", (socket: Socket) => {
-    console.log(`Server: User ${socket.id} connected`)
 
     for (const player of players) {
         socket.emit('spawnPlayer', player[1])
@@ -128,6 +127,7 @@ io.of('/client').on("connection", (socket: Socket) => {
         data.id = socket.id
         players.set(socket.id, data)
 
+        console.log(`Server: User ${data.username} spawned`)
         socket.broadcast.emit('spawnPlayer', data)
     })
 
@@ -169,8 +169,8 @@ io.of('/client').on("connection", (socket: Socket) => {
         socket.broadcast.emit('createExplosion', data)
     })
     socket.on('disconnect', () => {
-        console.log(`Server: User ${socket.id} disconnected`)
         if (players.has(socket.id)) {
+            console.log(`Server: User ${players.get(socket.id).username} disconnected`)
             players.delete(socket.id)
         }
 

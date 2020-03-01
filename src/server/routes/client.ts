@@ -6,10 +6,14 @@ function checkAuthenticated(req: any, res: any, next: any) {
     if(req.isAuthenticated()){
         return next()
     }
+    if(req.path.endsWith('.css'))
+    {
+        return res.sendFile(`/${req.path}`, {root: `${__dirname}'../../../client`});
+    }
     res.redirect('/login')
 }
 
-clientRouter.get(/.*(\.js|\.html|\/)/, checkAuthenticated, (req: any, res: any) => {
+clientRouter.get(/.*(\.js|\.html|\.css|\/)/, checkAuthenticated, (req: any, res: any) => {
     
     if(req.path == '/'){
         return res.redirect(`${req.baseUrl}/index.html`)

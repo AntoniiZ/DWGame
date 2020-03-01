@@ -1,19 +1,33 @@
-<h1> Register </h1>
-<% if (message) { %>
-    <%= message %>
-<% } %>
-<form action="/register" method="POST">
-    <div>
-        <label for="username">Username</label>
-        <input type="text" id="username" name="username" 
-        required>
-    </div>
-    <div>
-        <label for="password">Password</label>
-        <input type="password" id="password" 
-        name="password" required>
-    </div>
-    <button type="submit">Register</button>
-</form>
+<!DOCTYPE HTML>
+<html lang="en">
 
-<a href="/login">Login</a>
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="../client/style.css">
+</style>
+</head>
+
+<body>
+    <form action="/register" method="POST">
+
+        <div class="box">
+            <h1>Register</h1>
+            <hr>
+            <% if(message.length > 0) { %>
+            <div class="alert_message"><%= message %></div>
+            <% } %>
+            
+            <p>Username</p> <input type="username" name="username" class="username" required/>
+
+            <p>Password</p> <input type="password" name="password" class="password" required/>
+            <hr>
+
+            <button type="submit" id="btn2" style="margin-left: 34px">Register</button>
+            <p><a href="/login">Login</a></p>
+
+    </form>
+</body>
+
+</html>

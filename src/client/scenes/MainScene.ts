@@ -67,12 +67,12 @@ export class MainScene extends NetworkScene {
         this.player.spawnPlayer()
         this.player.updatePlayer()
 
-        this.coords = this.add.text(50, 50, '').setFontSize(25).setColor("#ffffff").setScrollFactor(0, 0)
+        this.coords = this.add.text(10, 10, '').setFontSize(25).setColor("#ffffff").setScrollFactor(0, 0)
         this.coords.cameraFilter = this.cameras.main.id
 
         for(let i: number = 0; i < this.leaderboardPlayerCount; i++){
-            this.lbPlayers[i] = this.add.text(window.innerWidth/2, 20 + 40*i, '').setFontSize(35).setScrollFactor(0, 0)
-            this.lbPlayers[i].cameraFilter = this.cameras.main.id
+            this.lbPlayers[i] = this.add.text(window.innerWidth-20, 20 + 40*i, '').setFontSize(25).setScrollFactor(0, 0)
+            this.lbPlayers[i].setOrigin(1, 0.5).cameraFilter = this.cameras.main.id
         }
 
     }
@@ -110,7 +110,7 @@ export class MainScene extends NetworkScene {
     }
     public pseudoUpdate(player: Player): void {
         //console.log(this.game.loop.actualFps) ~LAST_CHECKED_GOOD
-        this.coords.setText(`{x, y, fps} => {${Math.floor(player.getShape().x)}, ${Math.floor(player.getShape().y)}, ${this.game.loop.actualFps}}`)
+        this.coords.setText(`{x, y, fps} => {${Math.floor(player.getShape().x)}, ${Math.floor(player.getShape().y)}, ${Math.floor(this.game.loop.actualFps)}}`)
 
         player.move()
         player.updatePlayer()
