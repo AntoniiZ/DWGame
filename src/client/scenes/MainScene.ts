@@ -110,7 +110,7 @@ export class MainScene extends NetworkScene {
     }
     public pseudoUpdate(player: Player): void {
         //console.log(this.game.loop.actualFps) ~LAST_CHECKED_GOOD
-        this.coords.setText(`{x, y} => {${Math.floor(player.getShape().x)}, ${Math.floor(player.getShape().y)}}`)
+        this.coords.setText(`{x, y, fps} => {${Math.floor(player.getShape().x)}, ${Math.floor(player.getShape().y)}, ${this.game.loop.actualFps}}`)
 
         player.move()
         player.updatePlayer()

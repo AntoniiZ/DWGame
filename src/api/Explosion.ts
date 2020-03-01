@@ -1,6 +1,7 @@
 import { Arc } from './Arc';
 import * as GameMap from './GameMapConfig'
 import { Player } from './Player';
+import { game } from "../client/game";
 export class Explosion extends Arc {
 
     private player: Player
@@ -44,7 +45,7 @@ export class Explosion extends Arc {
                 }
             }
 
-            this.getShape().radius += GameMap.settings.explosionRadiusAdjustmentValue
+            this.getShape().radius += GameMap.settings.explosionRadiusAdjustmentValue * game.loop.targetFps / game.loop.actualFps 
             this.draw()
             if(this.collidesWith(this.player) && this.player.getScene().scene.key == 'MainScene'){
                 this.player.disconnect()

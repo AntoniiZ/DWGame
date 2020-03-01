@@ -16,8 +16,8 @@ export class BouncyWall extends Arc {
 
         let bounds: number[] = GameMap.settings.size
 
-        this.getShape().x += this.getVelocity().x * this.getSpeed()
-        this.getShape().y += this.getVelocity().y * this.getSpeed()
+        this.getShape().x += this.getVelocity().x * this.getSpeed() * game.loop.targetFps / game.loop.actualFps 
+        this.getShape().y += this.getVelocity().y * this.getSpeed() * game.loop.targetFps / game.loop.actualFps 
 
         if (this.getShape().x <= -bounds[0] / 2 + this.getShape().radius) {
             this.getShape().x = -bounds[0] / 2 + this.getShape().radius
@@ -54,8 +54,8 @@ export class BouncyWall extends Arc {
             this.setSpeed(arc.getSpeed() / (this.getShape().radius / arc.getShape().radius))
             this.setVelocity(arc.getVelocity().x, arc.getVelocity().y)
 
-            arc.getShape().x -= arc.getVelocity().x * arc.getSpeed() * 2
-            arc.getShape().y -= arc.getVelocity().y * arc.getSpeed() * 2
+            arc.getShape().x -= arc.getVelocity().x * arc.getSpeed() * 2 * game.loop.targetFps / game.loop.actualFps 
+            arc.getShape().y -= arc.getVelocity().y * arc.getSpeed() * 2 * game.loop.targetFps / game.loop.actualFps 
 
             if (arc.getShape().radius > GameMap.settings.playerMinRadius) {
                 arc.getShape().radius /= GameMap.settings.playerWallRadiusReductionCoef
