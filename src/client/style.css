@@ -12,6 +12,15 @@ body{
     text-decoration: none;
     color:#525252;
   }
+  ul {
+    text-decoration: none;
+    list-style-type: none;
+  }
+  li{
+    margin-top:20px;
+    font-size:1.2em;
+    color:#525252;
+  }
   
   h1{
     margin-top:10px;
@@ -50,20 +59,14 @@ body{
   }
   
   .btn{
-    background:#2ecc71;
-    width:125px;
     padding-top:5px;
     padding-bottom:5px;
     color:white;
-    border-radius:4px;
-    border: #27ae60 1px solid;
     
     margin-top:10px;
     margin-bottom:10px;
-    float:left;
+    float:right;
     margin-left:16px;
-    font-weight:800;
-    font-size:0.8em;
   }
   
   .btn:hover{
@@ -97,4 +100,13 @@ body{
   
   #btn2:hover{ 
   background:#3594D2; 
+  }
+
+  .jumbotron {
+    background:#3498db;
+    margin: 0 auto 0 auto;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    color:white;
+    width: 50%;
   }

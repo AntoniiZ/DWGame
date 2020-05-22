@@ -1,0 +1,41 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="../client/style.css">
+</head>
+
+<body>
+    <header>
+        <div class="jumbotron">
+            <div class="container">
+                <h1>
+                    <button type="button" class="btn btn-success btn-lg">
+                        <a href="/" style="color:inherit"> Home </a>
+                    </button>
+                    Welcome, <%= name %>!
+                    <span class="btn-group">
+                        <button type="button" class="btn btn-primary btn-lg">
+                            <a href="/client" style="color:inherit"> Play now! </a>
+                        </button>
+                        <button type="button" class="btn btn-info btn-lg">
+                            <a href="/stats" style="color:inherit"> Stats </a>
+                        </button>
+                        <button type="button" class="btn btn-warning btn-lg">
+                            <a href="/rankings" style="color:inherit"> Rankings </a>
+                        </button>
+                        <button type="button" class="btn btn-danger btn-lg">
+                            <a href="/logout" style="color:inherit"> Logout </a>
+                        </button>
+                    </span>
+                </h1>
+            </div>
+        </div>
+        <hr>
+    </header>
+</body>
+
+</html>

@@ -37,4 +37,8 @@ export var settings =
     'explosionRadiusAdjustmentValue': 1.5,
     'explosionInitialRadius': 10,
     'explosionColorRange': 0xff0000,
+    ///time win conditions
+    'maxSecondsForGame': 60,
+    'multiplierScoreForWinner': 2,
+    'multiplierScoreForLoser': 0.5
 }

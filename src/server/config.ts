@@ -1,5 +1,5 @@
 export default {
-    server_ip: '192.168.0.102',
+    server_ip: '192.168.0.104',
     server_port: 3000,
     database: {
         name: 'DWGame',
@@ -14,10 +14,11 @@ export default {
             );`,
             cUserStats: `CREATE TABLE IF NOT EXISTS userStats (
                 userId INT NOT NULL,
-                score INT NOT NULL,
-                rank INT NOT NULL,
+                score INT NOT NULL DEFAULT 0,
+                rank INT NOT NULL DEFAULT 0,
                 FOREIGN KEY (userId) REFERENCES users(id)
             );`,
+            /// below are FOR future development, not in the requirements
             cUpgrades: `CREATE TABLE IF NOT EXISTS upgrades (
                 id INT PRIMARY KEY AUTO_INCREMENT,
                 name VARCHAR(50) NOT NULL,

@@ -5,6 +5,7 @@ import * as GameMap from "./GameMapConfig"
 import * as config from "../server/config"
 export class Player extends BouncyWall {
 
+    private secondsPassed: number
     private username: string
     private socket: SocketIOClient.Socket
     private players: Map<string, Player> = new Map()
@@ -12,7 +13,7 @@ export class Player extends BouncyWall {
 
     public constructor(socket: SocketIOClient.Socket, username: string, scene: Phaser.Scene, 
         graphics: Phaser.GameObjects.Graphics, shape: Phaser.GameObjects.Arc, speed?: number, 
-        velocity?: Phaser.Geom.Point){
+        velocity?: Phaser.Geom.Point, secondsPassed?: number){
         
         super(scene, graphics, shape, speed, velocity)
 
@@ -20,7 +21,15 @@ export class Player extends BouncyWall {
         this.username = username
     }
 
-    public getUsername(){
+    public getSecondsPassed() : number {
+        return this.secondsPassed
+    }
+
+    public setSecondsPassed(secondsPassed: number) : void {
+        this.secondsPassed = secondsPassed
+    }
+
+    public getUsername() : string {
         return this.username
     }
 
@@ -45,6 +54,14 @@ export class Player extends BouncyWall {
                 x: this.getVelocity().x,
                 y: this.getVelocity().y
             }
+        })
+    }
+    public updateRankings(isWinner: boolean): SocketIOClient.Socket {
+        let shape: Phaser.GameObjects.Arc = this.getShape()
+        return this.socket.emit('updateRankings', {
+            username: this.getUsername(),
+            radius: shape.radius,
+            winner: isWinner
         })
     }
 

@@ -68,6 +68,7 @@ export default function initialize(passport: any) {
 
                             function (err, rows) {
                                 user.id = rows.insertId;
+                                connection.query('REPLACE INTO userStats (userId) VALUES (?)', [rows.insertId])
                                 return done(null, user);
                             }
                         );

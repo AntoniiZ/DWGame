@@ -149,6 +149,12 @@ export class PlayerEvents {
             )
         })
     }
+    private static getSecondsPassed(player: Player) : void
+    {
+        player.getSocket().on('secondsPassed', (secondsPassed: number) => {
+            player.setSecondsPassed(secondsPassed)
+        })
+    }
     private static initAllSocket(player: Player): void {
         this.spawnPlayer(player)
         this.updatePlayer(player)
@@ -157,6 +163,7 @@ export class PlayerEvents {
         this.updateObject(player)
         this.destroyObject(player)
         this.createExplosion(player)
+        this.getSecondsPassed(player);
     }
     
     public static initAll(player: Player) : void 

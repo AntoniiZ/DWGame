@@ -14,14 +14,29 @@ import loginRouter from './routes/login'
 import registerRouter from './routes/register'
 import mainRouter from './routes/main'
 import logoutRouter from './routes/logout'
+import statsRouter from './routes/stats'
+import rankingsRouter from './routes/rankings'
+
 import initializePassport from './passport-config'
 
+import * as mysql from 'mysql'
 const app = express(), conf = config.default
 
 let flash = require('express-flash')
 let http = require("http").Server(app)
+
+let objTime: number = Date.now();
 let io: SocketIO.Server = sio.listen(http)
 let objects: Map<string, any> = new Map(), players: Map<string, any> = new Map()
+
+let connection: mysql.Connection = mysql.createConnection({
+    host: config.default.server_ip,
+    user: config.default.database.user,
+    password: config.default.database.password,
+    database: config.default.database.name
+});
+
+connection.query(`USE ${connection.config.database}`);
 
 app.set('view-engine', 'ejs')
     .set('port', process.env.PORT || conf.server_port)
@@ -42,6 +57,8 @@ app.use(express.urlencoded({ extended: false }))
     .use('/login', loginRouter)
     .use('/register', registerRouter)
     .use('/logout', logoutRouter)
+    .use('/stats', statsRouter)
+    .use('/rankings', rankingsRouter)
 
 initializePassport(passport)
 
@@ -109,6 +126,18 @@ function spawnObjects(): void {
 }
 spawnObjects()
 
+function setObjTime(){
+    
+    let secondsPassed: number = Math.floor((Date.now() - objTime)/1000);
+    io.of('/client').emit('secondsPassed', secondsPassed);
+
+    if(secondsPassed >= GameMap.settings.maxSecondsForGame){
+        objTime = Date.now();
+    }
+
+    setTimeout(setObjTime, 1000)
+}
+setObjTime()
 io.of('/client').on("connection", (socket: Socket) => {
 
     for (const player of players) {
@@ -119,6 +148,23 @@ io.of('/client').on("connection", (socket: Socket) => {
         socket.emit('spawnObject', object[1])
     }
 
+    socket.on('updateRankings', (data: any) => {
+        let multiplier: number = GameMap.settings.multiplierScoreForLoser;
+
+        if(data.winner){
+            multiplier = GameMap.settings.multiplierScoreForWinner;
+        }
+
+        connection.query('SELECT id FROM users WHERE username = ?', data.username , (err, rows) => {
+
+            connection.query('UPDATE userStats SET score = score + ? WHERE userId = ?', 
+            [Math.floor(data.radius*multiplier), rows[0].id])
+            connection.query('UPDATE userStats SET rank = rank + ? WHERE userId = ?', 
+            [data.winner ? 1 : 0, rows[0].id])
+        });
+        
+        console.log(`Server: Rankings updated for ${data.username}`)
+    })
     socket.on('spawnPlayer', (data: any) => {
         if (players.has(socket.id) || !socket.connected) {
             return

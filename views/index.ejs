@@ -1,1 +1,56 @@
-<h1>Welcome. <a href = "/client">Click</a> to play</h1>
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="../client/style.css">
+    <%- include('header.ejs') %>
+</head>
+
+<body>
+    <main>
+        <div class="jumbotron">
+            <div class="container">
+                <h1>Tutorial for the game, objects and objectives</h1>
+                <ul>
+                    <li>
+                        Description - A battle royale type of a 2d game with circle objects in which multiple players 
+                        try to eliminate eachother with the help of strategy thinking and neutral objects. The 
+                        objective is to keep your score as high as possible until you run out of time or get 
+                        eliminated.
+                    </li>
+                    <li>
+                        Player/camera movement controls - {A, W, S, D} => {left, up, down, right}
+                    </li>
+                    <li>
+                        Green balls (Food) - The players can consume these in order to increase their radius. 
+                        The increase depends on the size of the green ball. The color variations are different.
+                    </li>
+                    <li>
+                        Orange balls (Bouncy Walls) - These can be pushed by all of the players and are the main aspect 
+                        of the game. Once pushed, they start moving until another object or player changes
+                        their velocity and the player that pushed the orange ball will have their radius reduced. 
+                        The orange balls can also consume the green balls and increase theirradius. If two orange 
+                        balls collide, they create an explosion. The color variations are different.
+                    </li>
+                    <li>
+                        Red balls (Explosion) - An explosion eliminates everything in its path unless it is another 
+                        explosion, whether it is a green or an orange ball. The explosion is the only aspect in
+                        this game that cause the players to get eliminated and lose their score. The purpose of
+                        the game is for players to strategically cause explosions to eliminate other players and 
+                        survive in the process. The color doesn't vary for the explosion.
+                    </li>
+                    <li>
+                        Players - The color variations for each newly connected player are different. Every specified
+                        period of time, the rankings get updated. Right now, ranks are equal to the amount of won games
+                        and the score increases based on the radius of the player in the end of the game.
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>
